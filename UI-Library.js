@@ -13,7 +13,7 @@
     
     function DragManager(element, options) {
         this.element = element;
-        this.enabled = options && options.enabled !== false;
+        this.enabled = (options && options.enabled !== undefined) ? options.enabled : true;
         this.onStart = (options && options.onStart) || function() {};
         this.onMove = (options && options.onMove) || function() {};
         this.onEnd = (options && options.onEnd) || function() {};
@@ -96,7 +96,7 @@
         
         setEnabled: function(enabled) {
             this.enabled = enabled;
-            this.element.style.cursor = enabled ? 'grab' : 'pointer';
+            this.element.style.cursor = enabled ? 'grab' : 'default';
         },
         
         isDragging: function() { return this._isDragging; }
@@ -132,11 +132,16 @@
             var centerX = buttonRect.left + buttonRect.width / 2;
             var centerY = buttonRect.top + buttonRect.height / 2;
             switch(direction) {
-                case 'top': return { x: centerX - targetRect.width / 2, y: buttonRect.bottom };
-                case 'bottom': return { x: centerX - targetRect.width / 2, y: buttonRect.top - targetRect.height };
-                case 'left': return { x: buttonRect.right, y: centerY - targetRect.height / 2 };
-                case 'right': return { x: buttonRect.left - targetRect.width, y: centerY - targetRect.height / 2 };
-                default: return { x: buttonRect.left, y: buttonRect.top };
+                case 'top': 
+                    return { x: centerX - targetRect.width / 2, y: buttonRect.bottom };
+                case 'bottom': 
+                    return { x: centerX - targetRect.width / 2, y: buttonRect.top - targetRect.height };
+                case 'left': 
+                    return { x: buttonRect.right, y: centerY - targetRect.height / 2 };
+                case 'right': 
+                    return { x: buttonRect.left - targetRect.width, y: centerY - targetRect.height / 2 };
+                default: 
+                    return { x: buttonRect.left, y: buttonRect.top };
             }
         },
         
@@ -253,8 +258,9 @@
     // MODULE 1: GENIE EFFECT (Lampe Magique)
     // ============================================================
     
-    function GenieEffect(element, options) {
+    function GenieEffect(element, button, options) {
         this.element = element;
+        this.button = button;
         this.options = {
             duration: (options && options.duration) || 700,
             skewIntensity: (options && options.skewIntensity) || 50,
@@ -265,7 +271,6 @@
         this.isAnimating = false;
         this.savedPosition = null;
         this.activeStyleId = null;
-        this.button = null;
         this.windowDrag = null;
         this.buttonDrag = null;
         
@@ -276,19 +281,10 @@
         constructor: GenieEffect,
         
         _init: function() {
-            this._createButton();
             this._initDrag();
             this._initEvents();
             this._initPosition();
             this._updateGlass();
-        },
-        
-        _createButton: function() {
-            var self = this;
-            this.button = document.createElement('button');
-            this.button.className = 'control-btn';
-            this.button.innerHTML = '🪔 Minimiser';
-            document.body.appendChild(this.button);
         },
         
         _initDrag: function() {
@@ -306,9 +302,7 @@
             });
             this.windowDrag.setEnabled(true);
             
-            this.buttonDrag = new DragManager(this.button, {
-                onEnd: function() { self._debug('Bouton repositionné'); }
-            });
+            this.buttonDrag = new DragManager(this.button);
         },
         
         _initEvents: function() {
@@ -338,7 +332,7 @@
             var closeBtn = this.element.querySelector('.close');
             if (closeBtn) {
                 closeBtn.addEventListener('click', function() {
-                    alert('🧞 La lampe magique vous salue !');
+                    alert('Lampe Magique vous salue !');
                 });
             }
             
@@ -440,9 +434,10 @@
             
             var btnRect = this.button.getBoundingClientRect();
             var target = this.savedPosition || {
-                left: (window.innerWidth - 580) / 2,
-                top: (window.innerHeight - 470) / 2,
-                width: 580, height: 470
+                left: (window.innerWidth - this.element.offsetWidth) / 2,
+                top: (window.innerHeight - this.element.offsetHeight) / 2,
+                width: this.element.offsetWidth,
+                height: this.element.offsetHeight
             };
             
             var direction = PositionDetector.getDirection(btnRect, target);
@@ -509,12 +504,7 @@
             }
         },
         
-        _debug: function(msg) {
-            console.log('[GenieEffect]', msg);
-        },
-        
         destroy: function() {
-            if (this.button && this.button.parentNode) this.button.parentNode.removeChild(this.button);
             this._cleanAnimation();
         }
     };
@@ -790,6 +780,102 @@
     };
 
     // ============================================================
+    // MODULE 3: COMBO WINDOW (Genie + Wobbly)
+    // ============================================================
+    
+    function ComboWindow(element, button, options) {
+        this.element = element;
+        this.button = button;
+        
+        this.genieOptions = {
+            duration: (options && options.duration) || 700,
+            skewIntensity: (options && options.skewIntensity) || 50,
+            glassEnabled: (options && options.glassEnabled !== undefined) ? options.glassEnabled : true
+        };
+        
+        this.wobblyOptions = {
+            intensity: (options && options.wobblyIntensity) || 1.2,
+            springSpeed: (options && options.springSpeed) || 0.14,
+            damping: (options && options.damping) || 0.89,
+            dragForce: (options && options.dragForce) || 2.0
+        };
+        
+        this.genie = null;
+        this.wobbly = null;
+        this._init();
+    }
+    
+    ComboWindow.prototype = {
+        constructor: ComboWindow,
+        
+        _init: function() {
+            var self = this;
+            this.genie = new GenieEffect(this.element, this.button, this.genieOptions);
+            this.wobbly = new WobblyWindow(this.element, this.wobblyOptions);
+            
+            var wobblyUpdate = this.wobbly._updatePhysics.bind(this.wobbly);
+            var wobblyApply = this.wobbly._applyTransform.bind(this.wobbly);
+            
+            this.wobbly._updatePhysics = function() {
+                var spring = this.options.springSpeed;
+                var damping = this.options.damping;
+                
+                this.skewVelX += (0 - this.currentSkewX) * spring;
+                this.skewVelY += (0 - this.currentSkewY) * spring;
+                this.skewVelX *= damping;
+                this.skewVelY *= damping;
+                this.currentSkewX += this.skewVelX;
+                this.currentSkewY += this.skewVelY;
+                
+                this.scaleVelX += (1 - this.currentScaleX) * spring;
+                this.scaleVelY += (1 - this.currentScaleY) * spring;
+                this.scaleVelX *= damping;
+                this.scaleVelY *= damping;
+                this.currentScaleX += this.scaleVelX;
+                this.currentScaleY += this.scaleVelY;
+                
+                this.rotateVel += (0 - this.currentRotate) * spring;
+                this.rotateVel *= damping;
+                this.currentRotate += this.rotateVel;
+                
+                var maxSkew = this.options.maxSkew;
+                this.currentSkewX = Math.min(maxSkew, Math.max(-maxSkew, this.currentSkewX));
+                this.currentSkewY = Math.min(maxSkew, Math.max(-maxSkew, this.currentSkewY));
+                this.currentScaleX = Math.min(1 + this.options.maxScale, Math.max(1 - this.options.maxScale, this.currentScaleX));
+                this.currentScaleY = Math.min(1 + this.options.maxScale, Math.max(1 - this.options.maxScale, this.currentScaleY));
+                this.currentRotate = Math.min(5, Math.max(-5, this.currentRotate));
+                
+                var transform = 'translate(0px, 0px) scale(' + this.currentScaleX + ', ' + this.currentScaleY + ') skew(' + this.currentSkewX + 'deg, ' + this.currentSkewY + 'deg) rotate(' + this.currentRotate + 'deg)';
+                this.element.style.transform = transform;
+            }.bind(this.wobbly);
+        },
+        
+        updateGenieOptions: function(options) {
+            if (this.genie) this.genie.updateOptions(options);
+        },
+        
+        updateWobblyOptions: function(options) {
+            if (this.wobbly) this.wobbly.updateParams(options);
+        },
+        
+        toggle: function() {
+            if (this.genie) this.genie.toggle();
+        },
+        
+        minimize: function() {
+            if (this.genie) this.genie.minimize();
+        },
+        
+        restore: function() {
+            if (this.genie) this.genie.restore();
+        },
+        
+        bringToFront: function() {
+            if (this.wobbly) this.wobbly.bringToFront();
+        }
+    };
+
+    // ============================================================
     // EXPORTATION
     // ============================================================
     
@@ -797,6 +883,7 @@
         DragManager: DragManager,
         GenieEffect: GenieEffect,
         WobblyWindow: WobblyWindow,
+        ComboWindow: ComboWindow,
         version: '1.0.0'
     };
     
