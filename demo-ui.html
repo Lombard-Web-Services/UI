@@ -3,44 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>UI-Library | Démonstration - Lampe Magique & Wobbly Windows</title>
+    <title>UI-Library | Lampe Magique & Wobbly Windows</title>
     <link rel="stylesheet" href="UI-Library.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            min-height: 100vh;
-            background: radial-gradient(circle at 0% 0%, #0f0c29, #1a1a3e, #0a0a15);
-            overflow: hidden;
-            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
-            transition: background 0.3s ease;
-        }
-
-        body.light-theme {
-            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
-        }
-
-        body.light-theme .window,
-        body.light-theme .wobbly-window .window-surface {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.15);
-        }
-
-        body.light-theme .title-bar {
-            background: rgba(0, 0, 0, 0.08);
-        }
-
+        /* Layout spécifique à la démo */
         .demo-container {
             position: relative;
             width: 100%;
             height: 100vh;
         }
-
+        
         .demo-section {
             position: absolute;
             top: 0;
@@ -52,27 +24,29 @@
             transition: opacity 0.4s ease, visibility 0.4s ease;
             overflow: auto;
         }
-
+        
         .demo-section.active {
             opacity: 1;
             visibility: visible;
         }
-
+        
         .section-header {
             text-align: center;
             padding: 20px;
             color: white;
+            position: relative;
+            z-index: 10;
         }
-
+        
         body.light-theme .section-header {
             color: #1a1a2e;
         }
-
+        
         .section-header h1 {
             font-size: 2rem;
             margin-bottom: 8px;
         }
-
+        
         .nav-bar {
             position: fixed;
             bottom: 30px;
@@ -87,7 +61,7 @@
             z-index: 1000;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-
+        
         .nav-btn {
             padding: 10px 24px;
             border-radius: 40px;
@@ -98,58 +72,60 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-
+        
         body.light-theme .nav-btn {
             color: #1a1a2e;
         }
-
+        
         .nav-btn.active {
             background: linear-gradient(135deg, #ffbd2e, #a78bfa);
             color: #1a1a2e;
         }
-
+        
         .nav-btn:hover:not(.active) {
             background: rgba(255, 255, 255, 0.2);
         }
-
-        .info-panel {
+        
+        .debug-info {
             position: fixed;
             top: 20px;
             right: 20px;
             background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(10px);
-            padding: 8px 16px;
-            border-radius: 20px;
             color: #a7f3d0;
+            padding: 8px 16px;
+            border-radius: 16px;
             font-family: monospace;
             font-size: 11px;
-            z-index: 1000;
+            z-index: 100;
         }
-
-        body.light-theme .info-panel {
-            background: rgba(0, 0, 0, 0.2);
-            color: #1a1a2e;
-        }
-
-        .theme-toggle {
+        
+        .demo-info {
             position: fixed;
             top: 20px;
             left: 20px;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(10px);
-            border: none;
-            padding: 8px 16px;
-            border-radius: 40px;
-            color: white;
-            cursor: pointer;
-            z-index: 1000;
-            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 100;
         }
-
-        body.light-theme .theme-toggle {
-            background: rgba(0, 0, 0, 0.2);
-            color: #1a1a2e;
+        
+        .wobbly-container {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 100px);
         }
+        
+        /* Ajustements pour la démo Wobbly */
+        .wobbly-window {
+            position: absolute;
+        }
+        
+        .wobbly-window[data-win-id="0"] { left: 60px; top: 60px; }
+        .wobbly-window[data-win-id="1"] { left: 480px; top: 160px; width: 460px; min-height: 380px; }
+        .wobbly-window[data-win-id="2"] { left: 280px; top: 460px; width: 440px; min-height: 340px; }
     </style>
 </head>
 <body>
@@ -166,7 +142,7 @@
             <div class="title-bar">
                 <div class="window-buttons">
                     <div class="window-btn close"></div>
-                    <div class="window-btn minimize-btn" id="magicMinimizeTrigger"></div>
+                    <div class="window-btn minimize-btn"></div>
                     <div class="window-btn maximize"></div>
                 </div>
                 <div class="title-text">🪔 Lampe Magique</div>
@@ -207,11 +183,12 @@
     <div id="wobblySection" class="demo-section">
         <div class="section-header">
             <h1>🌀 Wobbly Windows</h1>
-            <p>Effet liquide et élastique à la Compiz</p>
+            <p>Effet liquide et élastique style Compiz</p>
         </div>
         
-        <div class="windows-container" style="position: relative; width: 100%; height: calc(100vh - 100px);">
-            <div class="wobbly-window" data-win-id="0" style="left: 60px; top: 60px;">
+        <div class="wobbly-container" id="wobblyContainer">
+            <!-- Fenêtre 1 -->
+            <div class="wobbly-window" data-win-id="0">
                 <div class="window-surface">
                     <div class="window-titlebar" data-drag-handle>
                         <span class="window-title">🌀 COMPIZ STYLE · Fenêtre Principale</span>
@@ -233,7 +210,8 @@
                 </div>
             </div>
 
-            <div class="wobbly-window" data-win-id="1" style="left: 480px; top: 160px; width: 460px; min-height: 380px;">
+            <!-- Fenêtre 2 -->
+            <div class="wobbly-window" data-win-id="1">
                 <div class="window-surface">
                     <div class="window-titlebar" data-drag-handle>
                         <span class="window-title">📐 Fenêtre Secondaire</span>
@@ -253,7 +231,8 @@
                 </div>
             </div>
 
-            <div class="wobbly-window" data-win-id="2" style="left: 280px; top: 460px; width: 440px; min-height: 340px;">
+            <!-- Fenêtre 3 -->
+            <div class="wobbly-window" data-win-id="2">
                 <div class="window-surface">
                     <div class="window-titlebar" data-drag-handle>
                         <span class="window-title">🎨 Troisième Fenêtre</span>
@@ -275,28 +254,40 @@
             </div>
         </div>
 
-        <div class="potentiometer-panel" style="bottom: auto; top: 80px; left: auto; right: 30px; flex-direction: column;">
-            <div class="potentiometer-group">
-                <span class="potentiometer-label">💪 INTENSITÉ WOBBLE</span>
-                <input type="range" class="potentiometer" id="wobIntensity" min="0" max="2.2" step="0.02" value="1.2">
-                <span class="potentiometer-value" id="intensityVal">1.2</span>
+        <div class="control-panel">
+            <h3>🎛️ COMPIZ WOBBLE PARAMS</h3>
+            <div style="font-size:11px; margin-bottom:12px; text-align:center;">
+                🪟 Fenêtre active: <span id="activeWinName">Fenêtre 1</span>
             </div>
-            <div class="potentiometer-group">
-                <span class="potentiometer-label">🔁 RAPPEL ÉLASTIQUE</span>
-                <input type="range" class="potentiometer" id="wobSpring" min="0.06" max="0.28" step="0.005" value="0.14">
-                <span class="potentiometer-value" id="springVal">0.14</span>
+            
+            <div class="control-group">
+                <label>💪 INTENSITÉ WOBBLE <span id="intensityVal" class="value-display">1.2</span></label>
+                <input type="range" id="wobbleIntensity" min="0" max="2.2" step="0.02" value="1.2">
             </div>
-            <div class="potentiometer-group">
-                <span class="potentiometer-label">💨 AMORTISSEMENT</span>
-                <input type="range" class="potentiometer" id="wobDamping" min="0.75" max="0.97" step="0.005" value="0.89">
-                <span class="potentiometer-value" id="dampingVal">0.89</span>
+            
+            <div class="control-group">
+                <label>🔁 RAPPEL ÉLASTIQUE <span id="springVal" class="value-display">0.14</span></label>
+                <input type="range" id="springSpeed" min="0.06" max="0.28" step="0.005" value="0.14">
             </div>
-            <div class="potentiometer-group">
-                <span class="potentiometer-label">🕹️ FORCE TRACTION</span>
-                <input type="range" class="potentiometer" id="wobForce" min="0.5" max="3.2" step="0.05" value="2.0">
-                <span class="potentiometer-value" id="dragForceVal">2.0</span>
+            
+            <div class="control-group">
+                <label>💨 AMORTISSEMENT <span id="dampingVal" class="value-display">0.89</span></label>
+                <input type="range" id="wobbleFactor" min="0.75" max="0.97" step="0.005" value="0.89">
             </div>
-            <button id="resetWobbleBtn" style="margin-top: 12px; padding: 8px 16px; background: #ffbd2e; border: none; border-radius: 40px; font-weight: bold; cursor: pointer;">⟳ RÉINITIALISER</button>
+            
+            <div class="control-group">
+                <label>🕹️ FORCE TRACTION <span id="dragForceVal" class="value-display">2.0</span></label>
+                <input type="range" id="dragForce" min="0.5" max="3.2" step="0.05" value="2.0">
+            </div>
+            
+            <select id="windowSelector" class="panel-select">
+                <option value="0">🪟 Fenêtre 1 (Principale)</option>
+                <option value="1">🪟 Fenêtre 2 (Secondaire)</option>
+                <option value="2">🪟 Fenêtre 3</option>
+            </select>
+            
+            <button id="themeToggleWobbly" class="theme-toggle">🌓 THÈME CLAIR</button>
+            <button id="resetParamsBtn" class="reset-btn">⟳ RÉINITIALISER</button>
         </div>
     </div>
 </div>
@@ -306,13 +297,30 @@
     <button class="nav-btn" data-section="wobbly">🌀 Wobbly Windows</button>
 </div>
 
-<button class="theme-toggle" id="themeToggle">🌓 Thème Clair</button>
-<div class="info-panel" id="infoPanel">✅ UI-Library v1.0.0</div>
+<div class="demo-info">🧭 UI-Library</div>
+<div class="debug-info" id="debugInfo">✅ Prêt</div>
 
 <script src="UI-Library.js"></script>
 <script>
     (function() {
-        // Initialisation de la Lampe Magique
+        var debugEl = document.getElementById('debugInfo');
+        
+        function debug(msg) {
+            console.log('[Demo]', msg);
+            if (debugEl) {
+                debugEl.textContent = msg;
+                setTimeout(function() {
+                    if (debugEl && debugEl.textContent === msg) {
+                        debugEl.textContent = '✅ UI-Library v1.0.0';
+                    }
+                }, 2500);
+            }
+        }
+        
+        // ============================================================
+        // INITIALISATION LAMPE MAGIQUE
+        // ============================================================
+        
         var magicWindow = document.getElementById('magicWindow');
         var genie = new UILibrary.GenieEffect(magicWindow, {
             duration: 700,
@@ -320,7 +328,6 @@
             glassEnabled: true
         });
         
-        // Lier les contrôles de la lampe magique
         var durationPot = document.getElementById('magicDuration');
         var skewPot = document.getElementById('magicSkew');
         var glassPot = document.getElementById('magicGlass');
@@ -352,7 +359,10 @@
             });
         }
         
-        // Initialisation des fenêtres Wobbly
+        // ============================================================
+        // INITIALISATION WOBBLY WINDOWS
+        // ============================================================
+        
         var wobblyWindows = [];
         var winElements = document.querySelectorAll('.wobbly-window');
         winElements.forEach(function(el, idx) {
@@ -365,51 +375,76 @@
             wobblyWindows.push(wobbly);
         });
         
-        var activeWobWindow = 0;
+        var activeWindowIdx = 0;
         
-        function updateWobbleParams() {
-            var intensity = parseFloat(document.getElementById('wobIntensity').value);
-            var spring = parseFloat(document.getElementById('wobSpring').value);
-            var damping = parseFloat(document.getElementById('wobDamping').value);
-            var force = parseFloat(document.getElementById('wobForce').value);
-            
-            document.getElementById('intensityVal').textContent = intensity;
-            document.getElementById('springVal').textContent = spring;
-            document.getElementById('dampingVal').textContent = damping;
-            document.getElementById('dragForceVal').textContent = force;
-            
-            wobblyWindows.forEach(function(win) {
-                win.updateOptions({
-                    intensity: intensity,
-                    springSpeed: spring,
-                    damping: damping,
-                    dragForce: force
+        function updateActivePanel(index) {
+            activeWindowIdx = index;
+            var names = ['Fenêtre 1', 'Fenêtre 2', 'Fenêtre 3'];
+            document.getElementById('activeWinName').innerText = names[index] || 'Fenêtre ' + (index+1);
+            var win = wobblyWindows[activeWindowIdx];
+            if (win) {
+                document.getElementById('wobbleIntensity').value = win.options.intensity;
+                document.getElementById('springSpeed').value = win.options.springSpeed;
+                document.getElementById('wobbleFactor').value = win.options.damping;
+                document.getElementById('dragForce').value = win.options.dragForce;
+                updateDisplayValues();
+            }
+        }
+        
+        function updateDisplayValues() {
+            document.getElementById('intensityVal').innerText = document.getElementById('wobbleIntensity').value;
+            document.getElementById('springVal').innerText = document.getElementById('springSpeed').value;
+            document.getElementById('dampingVal').innerText = document.getElementById('wobbleFactor').value;
+            document.getElementById('dragForceVal').innerText = document.getElementById('dragForce').value;
+        }
+        
+        function applyToActive() {
+            if (wobblyWindows[activeWindowIdx]) {
+                wobblyWindows[activeWindowIdx].updateParams({
+                    intensity: parseFloat(document.getElementById('wobbleIntensity').value),
+                    springSpeed: parseFloat(document.getElementById('springSpeed').value),
+                    damping: parseFloat(document.getElementById('wobbleFactor').value),
+                    dragForce: parseFloat(document.getElementById('dragForce').value)
                 });
-            });
+            }
         }
         
-        var wobIntensity = document.getElementById('wobIntensity');
-        var wobSpring = document.getElementById('wobSpring');
-        var wobDamping = document.getElementById('wobDamping');
-        var wobForce = document.getElementById('wobForce');
+        document.getElementById('wobbleIntensity').addEventListener('input', function() { updateDisplayValues(); applyToActive(); });
+        document.getElementById('springSpeed').addEventListener('input', function() { updateDisplayValues(); applyToActive(); });
+        document.getElementById('wobbleFactor').addEventListener('input', function() { updateDisplayValues(); applyToActive(); });
+        document.getElementById('dragForce').addEventListener('input', function() { updateDisplayValues(); applyToActive(); });
         
-        if (wobIntensity) wobIntensity.addEventListener('input', updateWobbleParams);
-        if (wobSpring) wobSpring.addEventListener('input', updateWobbleParams);
-        if (wobDamping) wobDamping.addEventListener('input', updateWobbleParams);
-        if (wobForce) wobForce.addEventListener('input', updateWobbleParams);
+        document.getElementById('windowSelector').addEventListener('change', function(e) {
+            var idx = parseInt(e.target.value);
+            updateActivePanel(idx);
+            if (wobblyWindows[idx]) wobblyWindows[idx].bringToFront();
+        });
         
-        var resetBtn = document.getElementById('resetWobbleBtn');
-        if (resetBtn) {
-            resetBtn.addEventListener('click', function() {
-                if (wobIntensity) wobIntensity.value = '1.2';
-                if (wobSpring) wobSpring.value = '0.14';
-                if (wobDamping) wobDamping.value = '0.89';
-                if (wobForce) wobForce.value = '2.0';
-                updateWobbleParams();
-            });
-        }
+        document.getElementById('resetParamsBtn').addEventListener('click', function() {
+            document.getElementById('wobbleIntensity').value = '1.2';
+            document.getElementById('springSpeed').value = '0.14';
+            document.getElementById('wobbleFactor').value = '0.89';
+            document.getElementById('dragForce').value = '2.0';
+            updateDisplayValues();
+            applyToActive();
+        });
         
-        // Navigation entre les sections
+        // Theme toggle pour Wobbly
+        var isDark = true;
+        var themeToggleWobbly = document.getElementById('themeToggleWobbly');
+        themeToggleWobbly.addEventListener('click', function() {
+            isDark = !isDark;
+            document.body.classList.toggle('light-theme', !isDark);
+            themeToggleWobbly.innerHTML = isDark ? '☀️ THÈME CLAIR' : '🌙 THÈME SOMBRE';
+        });
+        
+        updateActivePanel(0);
+        if (wobblyWindows[0]) wobblyWindows[0].bringToFront();
+        
+        // ============================================================
+        // NAVIGATION
+        // ============================================================
+        
         var navBtns = document.querySelectorAll('.nav-btn');
         var magicSection = document.getElementById('magicSection');
         var wobblySection = document.getElementById('wobblySection');
@@ -423,28 +458,16 @@
                 if (section === 'magic') {
                     magicSection.classList.add('active');
                     wobblySection.classList.remove('active');
+                    debug('Lampe Magique activée');
                 } else {
                     magicSection.classList.remove('active');
                     wobblySection.classList.add('active');
+                    debug('Wobbly Windows activé');
                 }
             });
         });
         
-        // Thème clair/sombre
-        var themeToggle = document.getElementById('themeToggle');
-        var isDark = true;
-        themeToggle.addEventListener('click', function() {
-            isDark = !isDark;
-            document.body.classList.toggle('light-theme', !isDark);
-            themeToggle.innerHTML = isDark ? '☀️ Thème Clair' : '🌙 Thème Sombre';
-        });
-        
-        var infoPanel = document.getElementById('infoPanel');
-        if (infoPanel) {
-            setTimeout(function() {
-                infoPanel.textContent = '✅ UI-Library v1.0.0 - Prêt';
-            }, 1000);
-        }
+        debug('UI-Library v1.0.0 - Prêt');
     })();
 </script>
 </body>
