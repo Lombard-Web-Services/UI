@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Compiz Wobbly Windows - Effet Liquide sur la Fenêtre Complète</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            overflow: hidden;
+            transition: background 0.3s ease;
+        }
+
+        /* Thème Dark par défaut */
+        body {
+            background: radial-gradient(circle at 20% 30%, #0a0f1e, #0b1120, #030712);
+        }
+
+        body.theme-light {
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+        }
+
+        /* Conteneur */
+        .windows-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: visible;
+        }
+
+        /* 
+            FENÊTRE WOBBLY - EFFET LIQUIDE SUR LA FENÊTRE COMPLÈTE
+            Utilisation de transform avec scale, skew, rotate pour un effet élastique réaliste
+        */
+        .wobbly-window {
+            position: absolute;
+            width: 480px;
+            min-height: 400px;
+            border-radius: 24px;
+            cursor: default;
+            transition: z-index 0s;
+            will-change: transform, left, top;
+            transform-origin: var(--origin-x, 50%) var(--origin-y, 50%);
+        }
+
+        /* Surface interne de la fenêtre */
+        .window-surface {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 24px;
+            overflow: hidden;
+            transition: box-shadow 0.2s;
+        }
+
+        /* Glassmorphism */
+        body.theme-light .window-surface {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        body.theme-dark .window-surface {
+            background: rgba(18, 22, 35, 0.92);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        /* Barre de titre */
+        .window-titlebar {
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: grab;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            transition: background 0.2s;
+        }
+
+        body.theme-light .window-titlebar {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        body.theme-dark .window-titlebar {
+            background: rgba(30, 35, 55, 0.5);
+            border-bottom-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .window-titlebar:active { cursor: grabbing; }
+
+        .window-title {
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        body.theme-light .window-title { color: #1a1a2e; }
+        body.theme-dark .window-title { color: #f0f3fa; }
+
+        .window-controls { display: flex; gap: 10px; }
+        .window-btn {
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        .window-btn:hover { transform: scale(1.2); }
+        .btn-close { background: #ff5f56; }
+        .btn-minimize { background: #ffbd2e; }
+        .btn-maximize { background: #27c93f; }
+
+        .window-content {
+            padding: 24px;
+            flex: 1;
+        }
+
+        body.theme-light .window-content { color: #1e293b; }
+        body.theme-dark .window-content { color: #cbd5e6; }
+
+        .window-content h2 {
+            margin-bottom: 12px;
+            font-size: 20px;
+        }
+        body.theme-light .window-content h2 { color: #0f172a; }
+        body.theme-dark .window-content h2 { color: white; }
+
+        .window-content p { margin-bottom: 12px; font-size: 14px; line-height: 1.5; }
+
+        .wobble-demo {
+            background: linear-gradient(135deg, #3b82f6, #a855f7);
+            padding: 16px;
+            border-radius: 16px;
+            text-align: center;
+            font-weight: bold;
+            margin: 16px 0;
+            color: white;
+            transition: transform 0.1s;
+        }
+
+        /* PANEL DE CONTRÔLE */
+        .control-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(10, 15, 30, 0.95);
+            backdrop-filter: blur(16px);
+            border-radius: 24px;
+            padding: 20px;
+            width: 290px;
+            z-index: 2000;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        body.theme-light .control-panel {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .control-panel h3 {
+            color: white;
+            font-size: 14px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        body.theme-light .control-panel h3 { color: #1e293b; }
+
+        .control-group { margin-bottom: 14px; }
+        .control-group label {
+            display: flex;
+            justify-content: space-between;
+            color: #cbd5e6;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+        body.theme-light .control-group label { color: #334155; }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            background: #334155;
+            height: 4px;
+            border-radius: 4px;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+        }
+        .value-display { color: #3b82f6; font-weight: bold; }
+
+        .panel-select, .theme-toggle {
+            width: 100%;
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        body.theme-light .panel-select, body.theme-light .theme-toggle {
+            background: white;
+            color: #1e293b;
+            border-color: #cbd5e6;
+        }
+        .theme-toggle {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border: none;
+            font-weight: 600;
+            color: white;
+        }
+        .reset-btn {
+            width: 100%;
+            background: #3b82f6;
+            border: none;
+            padding: 8px;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: all 0.2s;
+        }
+        .reset-btn:hover { background: #2563eb; transform: scale(0.98); }
+
+        .instructions {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(12px);
+            padding: 8px 18px;
+            border-radius: 40px;
+            color: white;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* Focus / Z-index */
+        .wobbly-window.focused {
+            z-index: 100;
+        }
+        .dragging-active {
+            cursor: grabbing !important;
+            z-index: 200 !important;
+        }
+    </style>
+</head>
+<body class="theme-dark">
+
+<div class="windows-container">
+    <!-- FENÊTRE 1 -->
+    <div class="wobbly-window" data-win-id="0" style="left: 60px; top: 60px;">
+        <div class="window-surface">
+            <div class="window-titlebar" data-drag-handle>
+                <span class="window-title">🌀 COMPIZ STYLE · Fenêtre Principale</span>
+                <div class="window-controls">
+                    <button class="window-btn btn-close" data-action="close">✕</button>
+                    <button class="window-btn btn-minimize" data-action="minimize">−</button>
+                    <button class="window-btn btn-maximize" data-action="maximize">□</button>
+                </div>
+            </div>
+            <div class="window-content">
+                <h2>✨ EFFET LIQUIDE / ÉLASTIQUE</h2>
+                <p>La <strong>fenêtre elle-même</strong> se déforme comme de la gelée ! Cadre, barre de titre, contenu → tout wobble.</p>
+                <div class="wobble-demo">
+                    🍮 DÉFORMATION ÉLASTIQUE RÉALISTE 🍮<br>
+                    <span style="font-size:12px">Comme Compiz sous Linux</span>
+                </div>
+                <p>⚡ Physique: scale + skew + rotation<br>💧 Paramètres ajustables en temps réel</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- FENÊTRE 2 -->
+    <div class="wobbly-window" data-win-id="1" style="left: 480px; top: 160px; width: 460px; min-height: 380px;">
+        <div class="window-surface">
+            <div class="window-titlebar" data-drag-handle>
+                <span class="window-title">📐 Fenêtre Secondaire</span>
+                <div class="window-controls">
+                    <button class="window-btn btn-close" data-action="close">✕</button>
+                    <button class="window-btn btn-minimize" data-action="minimize">−</button>
+                    <button class="window-btn btn-maximize" data-action="maximize">□</button>
+                </div>
+            </div>
+            <div class="window-content">
+                <h2>Déformation physique</h2>
+                <p>Quand vous tirez, la fenêtre s'étire dans la direction du mouvement. Les bords opposés ondulent.</p>
+                <div style="background: rgba(59,130,246,0.2); border-radius: 14px; padding: 14px; margin-top: 12px;">
+                    🎯 VRAI WOBBLE - retour élastique à la release
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FENÊTRE 3 - CORRIGÉE (déplaçable) -->
+    <div class="wobbly-window" data-win-id="2" style="left: 280px; top: 460px; width: 440px; min-height: 340px;">
+        <div class="window-surface">
+            <div class="window-titlebar" data-drag-handle>
+                <span class="window-title">🎨 Troisième Fenêtre</span>
+                <div class="window-controls">
+                    <button class="window-btn btn-close" data-action="close">✕</button>
+                    <button class="window-btn btn-minimize" data-action="minimize">−</button>
+                    <button class="window-btn btn-maximize" data-action="maximize">□</button>
+                </div>
+            </div>
+            <div class="window-content">
+                <h2>Glassmorphism + Wobble</h2>
+                <p>La déformation affecte tout le contenu de manière cohérente.</p>
+                <p>Cliquez sur n'importe quelle fenêtre pour la mettre au premier plan.</p>
+                <div class="wobble-demo" style="margin-top:12px; padding:12px;">
+                    ✨ TOUTES LES FENÊTRES SONT DÉPLAÇABLES ✨
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PANEL DE CONTRÔLE -->
+<div class="control-panel">
+    <h3>🎛️ COMPIZ WOBBLE PARAMS</h3>
+    <div style="font-size:11px; margin-bottom:12px; text-align:center;">
+        🪟 Fenêtre active: <span id="activeWinName">Fenêtre 1</span>
+    </div>
+    
+    <div class="control-group">
+        <label>💪 INTENSITÉ WOBBLE <span id="intensityVal" class="value-display">1.2</span></label>
+        <input type="range" id="wobbleIntensity" min="0" max="2.2" step="0.02" value="1.2">
+    </div>
+    
+    <div class="control-group">
+        <label>🔁 RAPPEL ÉLASTIQUE <span id="springVal" class="value-display">0.14</span></label>
+        <input type="range" id="springSpeed" min="0.06" max="0.28" step="0.005" value="0.14">
+    </div>
+    
+    <div class="control-group">
+        <label>💨 AMORTISSEMENT <span id="dampingVal" class="value-display">0.89</span></label>
+        <input type="range" id="wobbleFactor" min="0.75" max="0.97" step="0.005" value="0.89">
+    </div>
+    
+    <div class="control-group">
+        <label>🕹️ FORCE TRACTION <span id="dragForceVal" class="value-display">2.0</span></label>
+        <input type="range" id="dragForce" min="0.5" max="3.2" step="0.05" value="2.0">
+    </div>
+    
+    <select id="windowSelector" class="panel-select">
+        <option value="0">🪟 Fenêtre 1 (Principale)</option>
+        <option value="1">🪟 Fenêtre 2 (Secondaire)</option>
+        <option value="2">🪟 Fenêtre 3</option>
+    </select>
+    
+    <button id="themeToggle" class="theme-toggle">🌓 THÈME CLAIR</button>
+    <button id="resetParamsBtn" class="reset-btn">⟳ RÉINITIALISER</button>
+</div>
+
+<div class="instructions">
+    🖱️ GLISSEZ une fenêtre → LA FENÊTRE MÊME SE DÉFORME (Compiz style élastique) · Click → Focus · Panel → réglages
+</div>
+
+<script>
+    (function() {
+        const requestAnimFrame = (function() {
+            return window.requestAnimationFrame ||
+                   window.webkitRequestAnimationFrame ||
+                   window.mozRequestAnimationFrame ||
+                   function(cb) { setTimeout(cb, 1000/60); };
+        })();
+
+        // Gestionnaire de fenêtre avec déformation élastique réaliste (style Compiz)
+        class CompizWobblyWindow {
+            constructor(element, winIndex) {
+                this.element = element;
+                this.winIndex = winIndex;
+                
+                // Paramètres physiques
+                this.params = {
+                    intensity: 1.2,
+                    springSpeed: 0.14,
+                    damping: 0.89,
+                    dragForce: 2.0,
+                    maxSkew: 14,
+                    maxScale: 0.12
+                };
+                
+                // État du drag
+                this.isDragging = false;
+                this.isMaximized = false;
+                this.normalLeft = 0, this.normalTop = 0, this.normalWidth = 0, this.normalHeight = 0;
+                this.dragStartX = 0, this.dragStartY = 0;
+                this.windowLeft = 0, this.windowTop = 0;
+                this.lastMouseX = 0, this.lastMouseY = 0;
+                this.dragVelocityX = 0, this.dragVelocityY = 0;
+                this.grabOffsetX = 0, this.grabOffsetY = 0;  // Position relative du clic dans la fenêtre
+                
+                // Déformation courante (valeurs élastiques)
+                this.currentSkewX = 0, this.currentSkewY = 0;
+                this.currentScaleX = 1, this.currentScaleY = 1;
+                this.currentRotate = 0;
+                
+                // Vélocités pour l'effet ressort
+                this.skewVelX = 0, this.skewVelY = 0;
+                this.scaleVelX = 0, this.scaleVelY = 0;
+                this.rotateVel = 0;
+                
+                this.animationId = null;
+                
+                this.init = this.init.bind(this);
+                this.onMouseDown = this.onMouseDown.bind(this);
+                this.onMouseMove = this.onMouseMove.bind(this);
+                this.onMouseUp = this.onMouseUp.bind(this);
+                this.updatePhysics = this.updatePhysics.bind(this);
+                this.applyTransform = this.applyTransform.bind(this);
+                this.animate = this.animate.bind(this);
+                this.bringToFront = this.bringToFront.bind(this);
+                this.toggleMaximize = this.toggleMaximize.bind(this);
+                
+                this.titlebar = this.element.querySelector('[data-drag-handle]');
+                if (this.titlebar) {
+                    this.titlebar.addEventListener('mousedown', this.onMouseDown);
+                }
+                
+                // Focus: cliquer n'importe où sur la fenêtre la met au premier plan
+                this.element.addEventListener('mousedown', (e) => {
+                    if (!e.target.closest('.window-btn')) this.bringToFront();
+                });
+                
+                // Boutons
+                const closeBtn = this.element.querySelector('[data-action="close"]');
+                if (closeBtn) closeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.element.style.display = 'none';
+                });
+                
+                const minimizeBtn = this.element.querySelector('[data-action="minimize"]');
+                if (minimizeBtn) minimizeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.element.style.transform = 'scale(0.95)';
+                    setTimeout(() => this.element.style.transform = '', 250);
+                });
+                
+                const maximizeBtn = this.element.querySelector('[data-action="maximize"]');
+                if (maximizeBtn) maximizeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.toggleMaximize();
+                });
+                
+                this.init();
+                this.startAnimation();
+            }
+            
+            init() {
+                this.element.style.transformOrigin = 'center center';
+                this.element.style.willChange = 'transform, left, top';
+            }
+            
+            bringToFront() {
+                const allWindows = document.querySelectorAll('.wobbly-window');
+                let maxZ = 10;
+                allWindows.forEach(win => {
+                    const z = parseInt(win.style.zIndex) || 10;
+                    if (z > maxZ) maxZ = z;
+                    win.classList.remove('focused');
+                });
+                this.element.style.zIndex = maxZ + 1;
+                this.element.classList.add('focused');
+                
+                // Mettre à jour le sélecteur du panneau
+                const selector = document.getElementById('windowSelector');
+                if (selector && parseInt(selector.value) !== this.winIndex) {
+                    selector.value = this.winIndex;
+                }
+                if (window.updateActivePanel) window.updateActivePanel(this.winIndex);
+            }
+            
+            toggleMaximize() {
+                if (!this.isMaximized) {
+                    this.normalLeft = parseFloat(this.element.style.left);
+                    this.normalTop = parseFloat(this.element.style.top);
+                    this.normalWidth = this.element.offsetWidth;
+                    this.normalHeight = this.element.offsetHeight;
+                    
+                    this.element.style.left = '0';
+                    this.element.style.top = '0';
+                    this.element.style.width = '100%';
+                    this.element.style.height = '100vh';
+                    this.element.style.borderRadius = '0';
+                    this.element.querySelector('.window-surface').style.borderRadius = '0';
+                    this.isMaximized = true;
+                } else {
+                    this.element.style.left = this.normalLeft + 'px';
+                    this.element.style.top = this.normalTop + 'px';
+                    this.element.style.width = this.normalWidth + 'px';
+                    this.element.style.height = this.normalHeight + 'px';
+                    this.element.style.borderRadius = '24px';
+                    this.element.querySelector('.window-surface').style.borderRadius = '24px';
+                    this.isMaximized = false;
+                }
+            }
+            
+            updatePhysics() {
+                const spring = this.params.springSpeed;
+                const damping = this.params.damping;
+                
+                // Retour des skew vers 0
+                this.skewVelX += (0 - this.currentSkewX) * spring;
+                this.skewVelY += (0 - this.currentSkewY) * spring;
+                this.skewVelX *= damping;
+                this.skewVelY *= damping;
+                this.currentSkewX += this.skewVelX;
+                this.currentSkewY += this.skewVelY;
+                
+                // Retour des scale vers 1
+                this.scaleVelX += (1 - this.currentScaleX) * spring;
+                this.scaleVelY += (1 - this.currentScaleY) * spring;
+                this.scaleVelX *= damping;
+                this.scaleVelY *= damping;
+                this.currentScaleX += this.scaleVelX;
+                this.currentScaleY += this.scaleVelY;
+                
+                // Retour de la rotation vers 0
+                this.rotateVel += (0 - this.currentRotate) * spring;
+                this.rotateVel *= damping;
+                this.currentRotate += this.rotateVel;
+                
+                // Limites
+                const maxSkew = this.params.maxSkew;
+                this.currentSkewX = Math.min(maxSkew, Math.max(-maxSkew, this.currentSkewX));
+                this.currentSkewY = Math.min(maxSkew, Math.max(-maxSkew, this.currentSkewY));
+                this.currentScaleX = Math.min(1 + this.params.maxScale, Math.max(1 - this.params.maxScale, this.currentScaleX));
+                this.currentScaleY = Math.min(1 + this.params.maxScale, Math.max(1 - this.params.maxScale, this.currentScaleY));
+                this.currentRotate = Math.min(5, Math.max(-5, this.currentRotate));
+            }
+            
+            applyTransform() {
+                // Appliquer la transformation complète à la fenêtre (style Compiz)
+                const transform = `translate(0px, 0px) scale(${this.currentScaleX}, ${this.currentScaleY}) skew(${this.currentSkewX}deg, ${this.currentSkewY}deg) rotate(${this.currentRotate}deg)`;
+                this.element.style.transform = transform;
+            }
+            
+            onMouseDown(e) {
+                if (e.target.closest('.window-btn')) return;
+                e.preventDefault();
+                this.bringToFront();
+                this.isDragging = true;
+                this.element.classList.add('dragging-active');
+                
+                const rect = this.element.getBoundingClientRect();
+                this.dragStartX = e.clientX;
+                this.dragStartY = e.clientY;
+                this.windowLeft = rect.left;
+                this.windowTop = rect.top;
+                this.lastMouseX = e.clientX;
+                this.lastMouseY = e.clientY;
+                
+                // Calculer l'offset du clic dans la fenêtre pour l'origin de transformation
+                this.grabOffsetX = (e.clientX - rect.left) / rect.width;
+                this.grabOffsetY = (e.clientY - rect.top) / rect.height;
+                // Changer dynamiquement l'origine de transformation pour un effet plus réaliste
+                this.element.style.transformOrigin = `${this.grabOffsetX * 100}% ${this.grabOffsetY * 100}%`;
+                
+                // Petite impulsion initiale
+                this.skewVelX += (Math.random() - 0.5) * 1.5;
+                this.skewVelY += (Math.random() - 0.5) * 1.5;
+                
+                document.addEventListener('mousemove', this.onMouseMove);
+                document.addEventListener('mouseup', this.onMouseUp);
+            }
+            
+            onMouseMove(e) {
+                if (!this.isDragging) return;
+                e.preventDefault();
+                
+                const dx = e.clientX - this.dragStartX;
+                const dy = e.clientY - this.dragStartY;
+                
+                // Calcul de la vélocité pour l'effet wobble
+                const velX = (e.clientX - this.lastMouseX) * 0.8;
+                const velY = (e.clientY - this.lastMouseY) * 0.8;
+                this.dragVelocityX = velX;
+                this.dragVelocityY = velY;
+                this.lastMouseX = e.clientX;
+                this.lastMouseY = e.clientY;
+                
+                // Déplacer la fenêtre
+                this.element.style.left = (this.windowLeft + dx) + 'px';
+                this.element.style.top = (this.windowTop + dy) + 'px';
+                
+                // Appliquer l'effet wobble basé sur la vélocité
+                const intensity = this.params.intensity;
+                const force = this.params.dragForce;
+                
+                // Skew proportionnel à la vélocité (effet de trainée)
+                const targetSkewX = velY * 0.18 * force * intensity;
+                const targetSkewY = velX * 0.18 * force * intensity;
+                
+                // Scale: étirement dans la direction du mouvement
+                const targetScaleX = 1 + (Math.abs(velX) * 0.012 * force * intensity);
+                const targetScaleY = 1 + (Math.abs(velY) * 0.012 * force * intensity);
+                
+                // Petite rotation pour l'effet "liquide"
+                const targetRotate = (velX - velY) * 0.08 * force * intensity;
+                
+                // Appliquer les forces avec de l'inertie
+                this.skewVelX += (targetSkewX - this.currentSkewX) * 0.3;
+                this.skewVelY += (targetSkewY - this.currentSkewY) * 0.3;
+                this.scaleVelX += (targetScaleX - this.currentScaleX) * 0.25;
+                this.scaleVelY += (targetScaleY - this.currentScaleY) * 0.25;
+                this.rotateVel += (targetRotate - this.currentRotate) * 0.2;
+                
+                // Effet supplémentaire : la vitesse crée une ondulation
+                const speed = Math.sqrt(velX * velX + velY * velY);
+                if (speed > 3) {
+                    const waveX = Math.sin(Date.now() * 0.02) * speed * 0.05 * intensity;
+                    const waveY = Math.cos(Date.now() * 0.02) * speed * 0.05 * intensity;
+                    this.skewVelX += waveX;
+                    this.skewVelY += waveY;
+                }
+            }
+            
+            onMouseUp(e) {
+                if (!this.isDragging) return;
+                this.isDragging = false;
+                this.element.classList.remove('dragging-active');
+                document.removeEventListener('mousemove', this.onMouseMove);
+                document.removeEventListener('mouseup', this.onMouseUp);
+                
+                // Réinitialiser l'origine de transformation
+                this.element.style.transformOrigin = 'center center';
+                
+                // Effet de rebond élastique à la release
+                const bounceX = (Math.random() - 0.5) * 2.5;
+                const bounceY = (Math.random() - 0.5) * 2.5;
+                this.skewVelX += bounceX;
+                this.skewVelY += bounceY;
+                this.scaleVelX += (Math.random() - 0.5) * 0.05;
+                this.scaleVelY += (Math.random() - 0.5) * 0.05;
+                this.rotateVel += (Math.random() - 0.5) * 1.2;
+            }
+            
+            animate() {
+                this.updatePhysics();
+                this.applyTransform();
+                this.animationId = requestAnimFrame(this.animate);
+            }
+            
+            startAnimation() {
+                if (this.animationId) cancelAnimationFrame(this.animationId);
+                this.animationId = requestAnimFrame(this.animate);
+            }
+            
+            updateParams(newParams) {
+                Object.assign(this.params, newParams);
+            }
+        }
+        
+        // Initialisation de TOUTES les fenêtres
+        const windows = [];
+        const winElements = document.querySelectorAll('.wobbly-window');
+        winElements.forEach((el, idx) => {
+            const wobbly = new CompizWobblyWindow(el, idx);
+            windows.push(wobbly);
+        });
+        
+        let activeWindowIdx = 0;
+        
+        function updateActivePanel(index) {
+            activeWindowIdx = index;
+            const names = ['Fenêtre 1', 'Fenêtre 2', 'Fenêtre 3'];
+            document.getElementById('activeWinName').innerText = names[index] || `Fenêtre ${index+1}`;
+            const win = windows[activeWindowIdx];
+            if (win) {
+                document.getElementById('wobbleIntensity').value = win.params.intensity;
+                document.getElementById('springSpeed').value = win.params.springSpeed;
+                document.getElementById('wobbleFactor').value = win.params.damping;
+                document.getElementById('dragForce').value = win.params.dragForce;
+                updateDisplayValues();
+            }
+        }
+        
+        function updateDisplayValues() {
+            document.getElementById('intensityVal').innerText = document.getElementById('wobbleIntensity').value;
+            document.getElementById('springVal').innerText = document.getElementById('springSpeed').value;
+            document.getElementById('dampingVal').innerText = document.getElementById('wobbleFactor').value;
+            document.getElementById('dragForceVal').innerText = document.getElementById('dragForce').value;
+        }
+        
+        function applyToActive() {
+            if (windows[activeWindowIdx]) {
+                windows[activeWindowIdx].updateParams({
+                    intensity: parseFloat(document.getElementById('wobbleIntensity').value),
+                    springSpeed: parseFloat(document.getElementById('springSpeed').value),
+                    damping: parseFloat(document.getElementById('wobbleFactor').value),
+                    dragForce: parseFloat(document.getElementById('dragForce').value)
+                });
+            }
+        }
+        
+        window.updateActivePanel = updateActivePanel;
+        
+        // UI Events
+        document.getElementById('wobbleIntensity').addEventListener('input', () => { updateDisplayValues(); applyToActive(); });
+        document.getElementById('springSpeed').addEventListener('input', () => { updateDisplayValues(); applyToActive(); });
+        document.getElementById('wobbleFactor').addEventListener('input', () => { updateDisplayValues(); applyToActive(); });
+        document.getElementById('dragForce').addEventListener('input', () => { updateDisplayValues(); applyToActive(); });
+        
+        document.getElementById('windowSelector').addEventListener('change', (e) => {
+            const idx = parseInt(e.target.value);
+            updateActivePanel(idx);
+            if (windows[idx]) windows[idx].bringToFront();
+        });
+        
+        document.getElementById('resetParamsBtn').addEventListener('click', () => {
+            document.getElementById('wobbleIntensity').value = '1.2';
+            document.getElementById('springSpeed').value = '0.14';
+            document.getElementById('wobbleFactor').value = '0.89';
+            document.getElementById('dragForce').value = '2.0';
+            updateDisplayValues();
+            applyToActive();
+        });
+        
+        // Theme toggle
+        let isDark = true;
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            isDark = !isDark;
+            document.body.classList.toggle('theme-light', !isDark);
+            document.body.classList.toggle('theme-dark', isDark);
+            document.getElementById('themeToggle').innerHTML = isDark ? '☀️ THÈME CLAIR' : '🌙 THÈME SOMBRE';
+        });
+        
+        updateActivePanel(0);
+        if (windows[0]) windows[0].bringToFront();
+        console.log('✅ COMPIZ WOBBLY WINDOWS - Effet élastique liquide sur TOUTES les fenêtres !');
+    })();
+</script>
+</body>
+</html>

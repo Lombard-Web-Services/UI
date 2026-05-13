@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🪔 Lampe Magique - Effet Génie Parfait</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    background: radial-gradient(circle at 0% 0%, #0f0c29, #1a1a3e, #0a0a15);
+    overflow: hidden;
+    font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(125deg, #ff6b6b 0%, #4ecdc4 25%, #45b7d1 50%, #96ceb4 75%, #ffeead 100%);
+    opacity: 0.15;
+    z-index: -2;
+    animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+    0% { opacity: 0.1; transform: scale(1); }
+    50% { opacity: 0.2; transform: scale(1.05); }
+    100% { opacity: 0.1; transform: scale(1); }
+}
+
+.window {
+    position: absolute;
+    width: 580px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px) saturate(180%);
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    will-change: transform, clip-path, opacity;
+    z-index: 10;
+}
+
+.title-bar {
+    height: 56px;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    border-radius: 28px 28px 0 0;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 12px;
+    cursor: grab;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    user-select: none;
+}
+
+.title-bar:active { cursor: grabbing; }
+.title-bar:hover { background: rgba(255, 255, 255, 0.18); }
+
+.window-buttons { display: flex; gap: 10px; }
+.window-btn {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.window-btn:hover { transform: scale(1.2); }
+.close { background: #ff5f56; }
+.minimize-btn { background: #ffbd2e; }
+.maximize { background: #27c93f; }
+
+.title-text {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 14px;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.content {
+    padding: 32px 32px 40px;
+    color: rgba(255, 255, 255, 0.9);
+}
+.content h2 {
+    margin-bottom: 16px;
+    font-size: 32px;
+    background: linear-gradient(135deg, #ffd89b, #c7e9fb, #a78bfa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.feature-list {
+    list-style: none;
+    margin: 24px 0;
+}
+.feature-list li {
+    padding: 10px 0 10px 34px;
+    position: relative;
+}
+.feature-list li::before {
+    content: "🧞";
+    position: absolute;
+    left: 0;
+    top: 8px;
+}
+
+.control-btn {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    padding: 14px 32px;
+    background: rgba(255, 189, 46, 0.25);
+    backdrop-filter: blur(16px);
+    color: #ffbd2e;
+    border: 1px solid rgba(255, 189, 46, 0.5);
+    border-radius: 60px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: grab;
+    z-index: 100;
+    font-family: monospace;
+    user-select: none;
+    touch-action: none;
+    transition: all 0.3s;
+}
+.control-btn:hover {
+    transform: translateY(-3px);
+    background: rgba(255, 189, 46, 0.35);
+}
+.control-btn.dragging {
+    cursor: grabbing;
+    transform: scale(1.02);
+    transition: none;
+}
+.control-btn.restore-mode {
+    background: rgba(102, 126, 234, 0.25);
+    color: #a78bfa;
+    border-color: rgba(102, 126, 234, 0.5);
+}
+
+.potentiometer-panel {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 20px 28px;
+    display: flex;
+    gap: 28px;
+    z-index: 90;
+}
+.potentiometer-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+.potentiometer-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+.potentiometer {
+    width: 130px;
+    height: 5px;
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+.potentiometer::-webkit-slider-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ffbd2e, #ff9d00);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    cursor: grab;
+}
+.potentiometer-value {
+    color: #ffbd2e;
+    font-family: monospace;
+    font-size: 13px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+
+.demo-info {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 12px;
+    z-index: 100;
+}
+.debug-info {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    color: #a7f3d0;
+    padding: 8px 16px;
+    border-radius: 16px;
+    font-family: monospace;
+    font-size: 11px;
+    z-index: 100;
+}
+.no-glass .window,
+.no-glass .control-btn,
+.no-glass .potentiometer-panel {
+    backdrop-filter: none;
+    background: rgba(0, 0, 0, 0.7);
+}
+
+@media (max-width: 768px) {
+    .window { width: 90%; }
+    .potentiometer-panel { flex-direction: column; gap: 16px; }
+    .potentiometer { width: 100%; }
+    .control-btn { padding: 10px 20px; font-size: 12px; }
+}
+</style>
+</head>
+<body>
+<div class="window" id="win">
+    <div class="title-bar" id="titleBar">
+        <div class="window-buttons">
+            <div class="window-btn close"></div>
+            <div class="window-btn minimize-btn" id="minimizeTrigger"></div>
+            <div class="window-btn maximize"></div>
+        </div>
+        <div class="title-text">🪔 Lampe Magique</div>
+    </div>
+    <div class="content">
+        <h2>🧞 Effet Génie Parfait</h2>
+        <p>La fenêtre émerge <strong>DEPUIS le bord du bouton</strong> sans jamais passer devant !</p>
+        <ul class="feature-list">
+            <li>🧭 Directionnel - Sort du bord opposé du bouton</li>
+            <li>🪞 Déformation symétrique</li>
+            <li>🖱️ Fenêtre et bouton déplaçables (fluide)</li>
+            <li>⚡ Paramètres durée et déformation</li>
+        </ul>
+        <p style="font-size: 12px; opacity: 0.6;">💡 Déplacez le bouton n'importe où, la restauration part du bord opposé !</p>
+    </div>
+</div>
+<button class="control-btn" id="actionBtn">🪔 Minimiser</button>
+<div class="demo-info">🧭</div>
+<div class="debug-info" id="debugInfo">✅ Prêt</div>
+<div class="potentiometer-panel">
+    <div class="potentiometer-group">
+        <span class="potentiometer-label">⏱️ Durée</span>
+        <input type="range" class="potentiometer" id="durationPot" min="300" max="1500" value="700" step="10">
+        <span class="potentiometer-value" id="durationValue">700ms</span>
+    </div>
+    <div class="potentiometer-group">
+        <span class="potentiometer-label">🌀 Déformation</span>
+        <input type="range" class="potentiometer" id="skewPot" min="20" max="80" value="50" step="1">
+        <span class="potentiometer-value" id="skewValue">50°</span>
+    </div>
+    <div class="potentiometer-group">
+        <span class="potentiometer-label">✨ Glass</span>
+        <input type="range" class="potentiometer" id="glassToggle" min="0" max="1" value="1" step="1">
+        <span class="potentiometer-value" id="glassValue">Activé</span>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// LAMPE MAGIQUE - EFFET GÉNIE PARFAIT
+// Version stable avec drag & drop fluide
+// ============================================================
+
+// ---------- CONFIGURATION ----------
+const AnimationConfig = (function() {
+    let instance = null;
+    function Config() {
+        this._duration = 700;
+        this._skewIntensity = 50;
+        this._glassEnabled = true;
+    }
+    Config.prototype = {
+        get duration() { return this._duration; },
+        set duration(v) { this._duration = v; },
+        get skewIntensity() { return this._skewIntensity; },
+        set skewIntensity(v) { this._skewIntensity = v; },
+        get glassEnabled() { return this._glassEnabled; },
+        set glassEnabled(v) {
+            this._glassEnabled = v;
+            document.body.classList.toggle('no-glass', !v);
+        }
+    };
+    return { getInstance: () => instance || (instance = new Config()) };
+})();
+
+// ---------- DÉTECTEUR DE POSITION ----------
+const PositionDetector = {
+    getDirection(buttonRect, windowRect) {
+        const bcx = buttonRect.left + buttonRect.width / 2;
+        const bcy = buttonRect.top + buttonRect.height / 2;
+        const wcx = windowRect.left + windowRect.width / 2;
+        const wcy = windowRect.top + windowRect.height / 2;
+        const dx = bcx - wcx;
+        const dy = bcy - wcy;
+        return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'bottom' : 'top');
+    },
+    
+    getClipPath(direction, p) {
+        const pinch = Math.min(p * 1.1, 1) * 48;
+        switch(direction) {
+            case 'top': return `polygon(${pinch}% 0%, ${100-pinch}% 0%, 100% 100%, 0% 100%)`;
+            case 'bottom': return `polygon(0% 0%, 100% 0%, ${100-pinch}% 100%, ${pinch}% 100%)`;
+            case 'left': return `polygon(0% ${pinch}%, 100% 0%, 100% 100%, 0% ${100-pinch}%)`;
+            case 'right': return `polygon(0% 0%, 100% ${pinch}%, 100% ${100-pinch}%, 0% 100%)`;
+            default: return `polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)`;
+        }
+    },
+    
+    // Position de départ : bord opposé du bouton
+    getStartPosition(buttonRect, targetRect, direction) {
+        const centerX = buttonRect.left + buttonRect.width / 2;
+        const centerY = buttonRect.top + buttonRect.height / 2;
+        switch(direction) {
+            case 'top': 
+                return { x: centerX - targetRect.width / 2, y: buttonRect.bottom };
+            case 'bottom': 
+                return { x: centerX - targetRect.width / 2, y: buttonRect.top - targetRect.height };
+            case 'left': 
+                return { x: buttonRect.right, y: centerY - targetRect.height / 2 };
+            case 'right': 
+                return { x: buttonRect.left - targetRect.width, y: centerY - targetRect.height / 2 };
+            default: 
+                return { x: buttonRect.left, y: buttonRect.top };
+        }
+    },
+    
+    getSkew(direction, intensity, progress) {
+        const easing = 1 - Math.pow(progress, 1.2);
+        switch(direction) {
+            case 'right': return intensity * easing;
+            case 'left': return -intensity * easing;
+            case 'bottom': return intensity * 0.4 * easing;
+            case 'top': return -intensity * 0.4 * easing;
+            default: return 0;
+        }
+    }
+};
+
+// ---------- DRAG MANAGER (fluide) ----------
+function DragManager(element, options = {}) {
+    this.element = element;
+    this.enabled = options.enabled !== false;
+    this.onStart = options.onStart || (() => {});
+    this.onMove = options.onMove || (() => {});
+    this.onEnd = options.onEnd || (() => {});
+    
+    this._isDragging = false;
+    this._offsetX = 0;
+    this._offsetY = 0;
+    
+    this._bindEvents();
+}
+
+DragManager.prototype = {
+    _bindEvents: function() {
+        this.element.addEventListener('mousedown', this._onMouseDown.bind(this));
+        document.addEventListener('mousemove', this._onMouseMove.bind(this));
+        document.addEventListener('mouseup', this._onMouseUp.bind(this));
+        this.element.addEventListener('touchstart', this._onTouchStart.bind(this), { passive: false });
+        document.addEventListener('touchmove', this._onTouchMove.bind(this), { passive: false });
+        document.addEventListener('touchend', this._onTouchEnd.bind(this));
+    },
+    
+    _onMouseDown: function(e) {
+        if (!this.enabled) return;
+        e.preventDefault();
+        this._startDrag(e.clientX, e.clientY);
+    },
+    
+    _onTouchStart: function(e) {
+        if (!this.enabled || e.touches.length !== 1) return;
+        e.preventDefault();
+        this._startDrag(e.touches[0].clientX, e.touches[0].clientY);
+    },
+    
+    _startDrag: function(clientX, clientY) {
+        this._isDragging = true;
+        this.element.classList.add('dragging');
+        const rect = this.element.getBoundingClientRect();
+        this._offsetX = clientX - rect.left;
+        this._offsetY = clientY - rect.top;
+        this.element.style.left = rect.left + 'px';
+        this.element.style.top = rect.top + 'px';
+        this.element.style.bottom = 'auto';
+        this.element.style.right = 'auto';
+        this.onStart();
+    },
+    
+    _onMouseMove: function(e) {
+        if (!this._isDragging) return;
+        e.preventDefault();
+        this._drag(e.clientX, e.clientY);
+    },
+    
+    _onTouchMove: function(e) {
+        if (!this._isDragging || e.touches.length !== 1) return;
+        e.preventDefault();
+        this._drag(e.touches[0].clientX, e.touches[0].clientY);
+    },
+    
+    _drag: function(clientX, clientY) {
+        let newLeft = clientX - this._offsetX;
+        let newTop = clientY - this._offsetY;
+        newLeft = Math.max(5, Math.min(newLeft, window.innerWidth - this.element.offsetWidth - 5));
+        newTop = Math.max(5, Math.min(newTop, window.innerHeight - this.element.offsetHeight - 5));
+        this.element.style.left = newLeft + 'px';
+        this.element.style.top = newTop + 'px';
+        this.onMove(newLeft, newTop);
+    },
+    
+    _onMouseUp: function() { this._stopDrag(); },
+    _onTouchEnd: function() { this._stopDrag(); },
+    
+    _stopDrag: function() {
+        if (this._isDragging) {
+            this._isDragging = false;
+            this.element.classList.remove('dragging');
+            this.onEnd();
+        }
+    },
+    
+    setEnabled: function(enabled) {
+        this.enabled = enabled;
+        this.element.style.cursor = enabled ? 'grab' : 'pointer';
+    },
+    
+    isDragging: function() { return this._isDragging; }
+};
+
+// ---------- ANIMATEUR ----------
+function GenieAnimator(config) {
+    this.config = config;
+    this._activeStyleId = null;
+}
+
+GenieAnimator.prototype = {
+    _clean: function() {
+        if (this._activeStyleId) {
+            const el = document.getElementById(this._activeStyleId);
+            if (el) el.remove();
+            this._activeStyleId = null;
+        }
+    },
+    
+    createMinimizeAnimation: function(buttonCenter, windowRect, direction) {
+        this._clean();
+        const styleId = 'genie-min-' + Date.now();
+        const style = document.createElement('style');
+        style.id = styleId;
+        
+        const startX = windowRect.left + windowRect.width / 2;
+        const startY = windowRect.top + windowRect.height / 2;
+        const deltaX = buttonCenter.x - startX;
+        const deltaY = buttonCenter.y - startY;
+        const maxSkew = this.config.skewIntensity;
+        
+        let keyframes = '@keyframes genieMinimize {\n';
+        const steps = [0, 0.08, 0.18, 0.3, 0.42, 0.54, 0.66, 0.77, 0.88, 0.95, 1];
+        
+        for (let i = 0; i < steps.length; i++) {
+            const p = steps[i];
+            const percent = Math.round(p * 100);
+            const ease = Math.pow(p, 1.4);
+            const tx = deltaX * ease;
+            const ty = deltaY * ease;
+            const sx = Math.max(1 - p * 1.15, 0.01);
+            const sy = Math.max(1 - p * 1.35, 0.01);
+            const skew = PositionDetector.getSkew(direction, maxSkew, p);
+            
+            keyframes += ` ${percent}% {
+                transform: translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${sx.toFixed(3)}, ${sy.toFixed(3)}) skew(${skew.toFixed(1)}deg);
+                clip-path: ${PositionDetector.getClipPath(direction, p)};
+                opacity: ${Math.max(1 - p * 1.2, 0).toFixed(3)};
+            }\n`;
+        }
+        keyframes += '}';
+        style.textContent = keyframes;
+        document.head.appendChild(style);
+        this._activeStyleId = styleId;
+        return 'genieMinimize';
+    },
+    
+    createRestoreAnimation: function(startCenter, targetRect, direction) {
+        this._clean();
+        const styleId = 'genie-res-' + Date.now();
+        const style = document.createElement('style');
+        style.id = styleId;
+        
+        const targetCenterX = targetRect.left + targetRect.width / 2;
+        const targetCenterY = targetRect.top + targetRect.height / 2;
+        const deltaX = targetCenterX - startCenter.x;
+        const deltaY = targetCenterY - startCenter.y;
+        const maxSkew = this.config.skewIntensity;
+        
+        let keyframes = '@keyframes genieRestore {\n';
+        const steps = [0, 0.05, 0.12, 0.23, 0.34, 0.46, 0.58, 0.70, 0.82, 0.92, 1];
+        
+        for (let i = 0; i < steps.length; i++) {
+            const p = steps[i];
+            const percent = Math.round(p * 100);
+            const ease = Math.pow(p, 1.2);
+            const tx = deltaX * ease;
+            const ty = deltaY * ease;
+            const sx = Math.min(p * 1.15, 1);
+            const sy = Math.min(p * 1.35, 1);
+            const skew = PositionDetector.getSkew(direction, maxSkew, 1 - p);
+            
+            keyframes += ` ${percent}% {
+                transform: translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${sx.toFixed(3)}, ${sy.toFixed(3)}) skew(${skew.toFixed(1)}deg);
+                clip-path: ${PositionDetector.getClipPath(direction, 1 - p)};
+                opacity: ${Math.min(p * 1.3, 1).toFixed(3)};
+            }\n`;
+        }
+        keyframes += '}';
+        style.textContent = keyframes;
+        document.head.appendChild(style);
+        this._activeStyleId = styleId;
+        return 'genieRestore';
+    },
+    
+    reset: function() { this._clean(); }
+};
+
+// ---------- CLASSE PRINCIPALE ----------
+function LampMagique() {
+    this.window = document.getElementById('win');
+    this.button = document.getElementById('actionBtn');
+    this.debugEl = document.getElementById('debugInfo');
+    
+    this.isMinimized = false;
+    this.isAnimating = false;
+    this.savedPosition = null;
+    
+    this.config = AnimationConfig.getInstance();
+    this.animator = new GenieAnimator(this.config);
+    
+    this._init();
+}
+
+LampMagique.prototype = {
+    _init: function() {
+        this._initDrag();
+        this._initPotentiometers();
+        this._initEvents();
+        this._initWindowPosition();
+        this._debug('✅ Prêt - Drag & drop fluide, restauration depuis le bord opposé !');
+    },
+    
+    _initDrag: function() {
+        const titleBar = document.getElementById('titleBar');
+        
+        this.windowDrag = new DragManager(this.window, {
+            onMove: function(x, y) {
+                this.savedPosition = {
+                    left: x, top: y,
+                    width: this.window.offsetWidth,
+                    height: this.window.offsetHeight
+                };
+            }.bind(this)
+        });
+        this.windowDrag.setEnabled(true);
+        
+        this.buttonDrag = new DragManager(this.button, {
+            onEnd: function() { this._debug('✅ Bouton repositionné'); }.bind(this)
+        });
+    },
+    
+    _initPotentiometers: function() {
+        const durationPot = document.getElementById('durationPot');
+        const skewPot = document.getElementById('skewPot');
+        const glassToggle = document.getElementById('glassToggle');
+        const durationVal = document.getElementById('durationValue');
+        const skewVal = document.getElementById('skewValue');
+        const glassVal = document.getElementById('glassValue');
+        
+        durationPot.addEventListener('input', function(e) {
+            this.config.duration = parseInt(e.target.value);
+            durationVal.textContent = this.config.duration + 'ms';
+        }.bind(this));
+        
+        skewPot.addEventListener('input', function(e) {
+            this.config.skewIntensity = parseInt(e.target.value);
+            skewVal.textContent = this.config.skewIntensity + '°';
+        }.bind(this));
+        
+        glassToggle.addEventListener('input', function(e) {
+            this.config.glassEnabled = parseInt(e.target.value) === 1;
+            glassVal.textContent = this.config.glassEnabled ? 'Activé' : 'Désactivé';
+        }.bind(this));
+    },
+    
+    _initEvents: function() {
+        this.button.addEventListener('click', function() {
+            if (this.buttonDrag.isDragging()) return;
+            this.toggle();
+        }.bind(this));
+        
+        document.getElementById('minimizeTrigger').addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (!this.isMinimized && !this.isAnimating) this.minimize();
+        }.bind(this));
+        
+        document.getElementById('titleBar').addEventListener('dblclick', function() {
+            if (!this.isAnimating) this.toggle();
+        }.bind(this));
+        
+        document.querySelector('.close').addEventListener('click', function() {
+            alert('🧞 La lampe magique vous salue !');
+        });
+        
+        window.addEventListener('resize', this._onResize.bind(this));
+    },
+    
+    _initWindowPosition: function() {
+        const left = (window.innerWidth - 580) / 2;
+        const top = (window.innerHeight - 470) / 2;
+        this.window.style.left = left + 'px';
+        this.window.style.top = top + 'px';
+        this.savedPosition = { left: left, top: top, width: 580, height: 470 };
+    },
+    
+    _onResize: function() {
+        if (!this.isMinimized && !this.isAnimating && this.savedPosition) {
+            const left = Math.min(this.savedPosition.left, window.innerWidth - this.savedPosition.width - 10);
+            const top = Math.min(this.savedPosition.top, window.innerHeight - this.savedPosition.height - 10);
+            this.window.style.left = Math.max(5, left) + 'px';
+            this.window.style.top = Math.max(5, top) + 'px';
+        }
+        if (this.button.style.left) {
+            let left = Math.max(5, Math.min(parseFloat(this.button.style.left), window.innerWidth - this.button.offsetWidth - 5));
+            let top = Math.max(5, Math.min(parseFloat(this.button.style.top), window.innerHeight - this.button.offsetHeight - 5));
+            this.button.style.left = left + 'px';
+            this.button.style.top = top + 'px';
+        }
+    },
+    
+    _getButtonCenter: function() {
+        const r = this.button.getBoundingClientRect();
+        return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    },
+    
+    minimize: function() {
+        if (this.isMinimized || this.isAnimating) return;
+        this.isAnimating = true;
+        
+        const winRect = this.window.getBoundingClientRect();
+        this.savedPosition = {
+            left: winRect.left, top: winRect.top,
+            width: winRect.width, height: winRect.height
+        };
+        
+        const btnCenter = this._getButtonCenter();
+        const direction = PositionDetector.getDirection(this.button.getBoundingClientRect(), winRect);
+        
+        this._debug(`🧞 Minimisation direction: ${direction.toUpperCase()}`);
+        
+        this.window.style.position = 'fixed';
+        this.window.style.left = winRect.left + 'px';
+        this.window.style.top = winRect.top + 'px';
+        this.window.style.width = winRect.width + 'px';
+        this.window.style.height = winRect.height + 'px';
+        this.window.style.zIndex = '1000';
+        
+        this.windowDrag.setEnabled(false);
+        this.buttonDrag.setEnabled(false);
+        
+        const animName = this.animator.createMinimizeAnimation(btnCenter, winRect, direction);
+        this.window.style.animation = `${animName} ${this.config.duration}ms cubic-bezier(0.4, 0, 0.2, 1) forwards`;
+        
+        const onEnd = function() {
+            this.window.removeEventListener('animationend', onEnd);
+            this.window.style.display = 'none';
+            this.window.style.visibility = 'hidden';
+            this.animator.reset();
+            this.isAnimating = false;
+            this.isMinimized = true;
+            this.button.innerHTML = '✨ Restaurer';
+            this.button.classList.add('restore-mode');
+            this.buttonDrag.setEnabled(true);
+            this._debug(`✅ Minimisé - Direction: ${direction.toUpperCase()}`);
+        }.bind(this);
+        
+        this.window.addEventListener('animationend', onEnd, { once: true });
+        setTimeout(function() { if (this.isAnimating) onEnd(); }.bind(this), this.config.duration + 100);
+    },
+    
+    restore: function() {
+        if (!this.isMinimized || this.isAnimating) return;
+        this.isAnimating = true;
+        
+        const btnRect = this.button.getBoundingClientRect();
+        const target = this.savedPosition || {
+            left: (window.innerWidth - 580) / 2,
+            top: (window.innerHeight - 470) / 2,
+            width: 580, height: 470
+        };
+        
+        const direction = PositionDetector.getDirection(btnRect, target);
+        
+        // Position de départ : bord opposé du bouton
+        const startPos = PositionDetector.getStartPosition(btnRect, target, direction);
+        const startCenter = {
+            x: startPos.x + target.width / 2,
+            y: startPos.y + target.height / 2
+        };
+        
+        this._debug(`✨ Restauration ${direction.toUpperCase()} - Départ bord opposé`);
+        
+        this.window.style.display = 'block';
+        this.window.style.visibility = 'visible';
+        this.window.style.position = 'fixed';
+        this.window.style.left = startPos.x + 'px';
+        this.window.style.top = startPos.y + 'px';
+        this.window.style.width = target.width + 'px';
+        this.window.style.height = target.height + 'px';
+        this.window.style.zIndex = '1000';
+        this.window.style.opacity = '0';
+        
+        void this.window.offsetHeight;
+        
+        const animName = this.animator.createRestoreAnimation(startCenter, target, direction);
+        this.window.style.animation = `${animName} ${this.config.duration}ms cubic-bezier(0.23, 1, 0.32, 1) forwards`;
+        this.window.style.opacity = '1';
+        
+        const onEnd = function() {
+            this.window.removeEventListener('animationend', onEnd);
+            
+            this.window.style.position = '';
+            this.window.style.left = target.left + 'px';
+            this.window.style.top = target.top + 'px';
+            this.window.style.width = '';
+            this.window.style.height = '';
+            this.window.style.zIndex = '';
+            this.window.style.animation = '';
+            this.window.style.opacity = '';
+            
+            this.animator.reset();
+            this.isAnimating = false;
+            this.isMinimized = false;
+            
+            this.windowDrag.setEnabled(true);
+            this.buttonDrag.setEnabled(true);
+            this.button.innerHTML = '🪔 Minimiser';
+            this.button.classList.remove('restore-mode');
+            
+            this._debug(`✅ Restauré ${direction.toUpperCase()} - Émergence depuis le bord opposé`);
+        }.bind(this);
+        
+        this.window.addEventListener('animationend', onEnd, { once: true });
+        setTimeout(function() { if (this.isAnimating) onEnd(); }.bind(this), this.config.duration + 150);
+    },
+    
+    toggle: function() {
+        if (this.isAnimating) return;
+        if (this.isMinimized) {
+            this.restore();
+        } else {
+            this.minimize();
+        }
+    },
+    
+    _debug: function(msg) {
+        console.log('[LampeMagique]', msg);
+        if (this.debugEl) {
+            this.debugEl.textContent = msg;
+            setTimeout(function() {
+                if (this.debugEl && this.debugEl.textContent === msg) {
+                    this.debugEl.textContent = '✅ Prêt - Drag & drop fluide !';
+                }
+            }.bind(this), 2500);
+        }
+    }
+};
+
+// Démarrage
+console.log('%c🪔 Lampe Magique - Version stable', 'color: #ffbd2e; font-size: 14px; font-weight: bold');
+console.log('%c✨ Restauration depuis le bord OPPOSÉ du bouton', 'color: #a78bfa; font-size: 12px');
+const app = new LampMagique();
+</script>
+</body>
+</html>
