@@ -1,6 +1,7 @@
 /* ============================================================
    UI-Library.css
    Styles pour les composants UI-Library
+   Version complete et corrigee
    ============================================================ */
 
 * {
@@ -9,7 +10,7 @@
     box-sizing: border-box;
 }
 
-/* Animation de fond */
+/* Animation de fond principale */
 body {
     min-height: 100vh;
     background: radial-gradient(circle at 0% 0%, #0f0c29, #1a1a3e, #0a0a15);
@@ -37,7 +38,7 @@ body::before {
     100% { opacity: 0.1; transform: scale(1); }
 }
 
-/* Theme Light */
+/* Theme Light - avec contraste ameliore */
 body.light-theme {
     background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
 }
@@ -49,48 +50,65 @@ body.light-theme::before {
 body.light-theme .window,
 body.light-theme .window-surface,
 body.light-theme .combo-window .window-surface {
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(30, 35, 55, 0.92);
     backdrop-filter: blur(12px);
-    box-shadow: 0 25px 45px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.6);
+    box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 body.light-theme .title-bar,
 body.light-theme .window-titlebar {
-    background: rgba(0, 0, 0, 0.08);
+    background: rgba(20, 25, 45, 0.7);
+    border-bottom-color: rgba(255, 255, 255, 0.15);
 }
 
 body.light-theme .title-text,
 body.light-theme .window-title {
-    color: #1a1a2e;
+    color: #e0e0e0;
 }
 
 body.light-theme .window-content,
 body.light-theme .window-content p {
-    color: #1e293b;
+    color: #d0d0d0;
 }
 
 body.light-theme .window-content h2 {
-    color: #0f172a;
+    color: #ffffff;
+}
+
+body.light-theme .content h2 {
+    background: linear-gradient(135deg, #ffd89b, #c7e9fb, #a78bfa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
 
 body.light-theme .control-panel,
-body.light-theme .potentiometer-panel {
-    background: rgba(255, 255, 255, 0.9);
-    border-color: rgba(0, 0, 0, 0.1);
+body.light-theme .potentiometer-panel,
+body.light-theme .double-panel {
+    background: rgba(20, 25, 45, 0.9);
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 body.light-theme .control-panel h3,
-body.light-theme .potentiometer-label {
-    color: #1e293b;
+body.light-theme .potentiometer-label,
+body.light-theme .double-panel h4 {
+    color: #ffbd2e;
 }
 
 body.light-theme .control-group label {
-    color: #334155;
+    color: #c0c0c0;
 }
 
 body.light-theme .potentiometer-value {
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.4);
     color: #ffbd2e;
+}
+
+body.light-theme .debug-info,
+body.light-theme .demo-info {
+    background: rgba(0, 0, 0, 0.6);
+    color: #a7f3d0;
 }
 
 /* No Glass mode */
@@ -99,15 +117,43 @@ body.no-glass .control-btn,
 body.no-glass .potentiometer-panel,
 body.no-glass .window-surface,
 body.no-glass .control-panel,
-body.no-glass .combo-window .window-surface {
+body.no-glass .combo-window .window-surface,
+body.no-glass .double-panel {
     backdrop-filter: none;
     background: rgba(0, 0, 0, 0.85);
 }
 
 body.no-glass.light-theme .window,
 body.no-glass.light-theme .window-surface,
-body.no-glass.light-theme .control-panel {
-    background: rgba(255, 255, 255, 0.95);
+body.no-glass.light-theme .control-panel,
+body.no-glass.light-theme .double-panel {
+    background: rgba(15, 20, 35, 0.95);
+}
+
+/* Background speciaux pour Wobbly et Combo */
+.wobbly-container,
+.combo-container {
+    background: linear-gradient(135deg, #0a5f5f, #1a0a3e);
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+}
+
+.wobbly-container::before,
+.combo-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 20% 40%, rgba(0,255,200,0.1), rgba(128,0,255,0.1));
+    pointer-events: none;
+}
+
+body.light-theme .wobbly-container,
+body.light-theme .combo-container {
+    background: linear-gradient(135deg, #0a3a3a, #1a0a2e);
 }
 
 /* ============================================================
@@ -117,7 +163,7 @@ body.no-glass.light-theme .control-panel {
 .window {
     position: absolute;
     width: 580px;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(20px) saturate(180%);
     border-radius: 28px;
     border: 1px solid rgba(255, 255, 255, 0.25);
@@ -129,7 +175,7 @@ body.no-glass.light-theme .control-panel {
 
 .title-bar {
     height: 56px;
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(10px);
     border-radius: 28px 28px 0 0;
     display: flex;
@@ -142,7 +188,7 @@ body.no-glass.light-theme .control-panel {
 }
 
 .title-bar:active { cursor: grabbing; }
-.title-bar:hover { background: rgba(255, 255, 255, 0.18); }
+.title-bar:hover { background: rgba(255, 255, 255, 0.1); }
 
 .window-buttons { display: flex; gap: 10px; }
 .window-btn {
@@ -283,14 +329,15 @@ body.no-glass.light-theme .control-panel {
 .windows-container {
     position: relative;
     width: 100%;
-    height: 100vh;
+    height: calc(100vh - 80px);
     overflow: visible;
+    padding: 20px;
 }
 
 .wobbly-window {
     position: absolute;
-    width: 480px;
-    min-height: 400px;
+    width: 460px;
+    min-height: 380px;
     border-radius: 24px;
     cursor: default;
     transition: z-index 0s;
@@ -319,7 +366,7 @@ body.no-glass.light-theme .control-panel {
     cursor: grab;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     transition: background 0.2s;
-    background: rgba(30, 35, 55, 0.5);
+    background: rgba(30, 35, 55, 0.6);
     border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
@@ -472,8 +519,11 @@ body.no-glass.light-theme .control-panel {
 
 .combo-window {
     position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     width: 560px;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(20px) saturate(180%);
     border-radius: 28px;
     border: 1px solid rgba(255, 255, 255, 0.25);
@@ -493,12 +543,65 @@ body.no-glass.light-theme .control-panel {
     cursor: grab;
 }
 
+.double-panel {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 20px;
+    width: 320px;
+    z-index: 90;
+}
+
+.double-panel h4 {
+    color: #ffbd2e;
+    margin-bottom: 12px;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 6px;
+}
+
+.double-panel .control-group {
+    margin-bottom: 12px;
+}
+
+.double-panel .control-group label {
+    display: flex;
+    justify-content: space-between;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 11px;
+}
+
+.double-panel input {
+    width: 100%;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.2);
+    height: 4px;
+    border-radius: 4px;
+    -webkit-appearance: none;
+}
+
+.double-panel input::-webkit-slider-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #ffbd2e;
+    cursor: pointer;
+    -webkit-appearance: none;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .window { width: 90%; }
     .combo-window { width: 90%; }
+    .wobbly-window { width: 90%; left: 5% !important; }
     .potentiometer-panel { flex-direction: column; gap: 16px; bottom: auto; top: 20px; left: 20px; }
     .potentiometer { width: 100%; }
     .control-btn { padding: 10px 20px; font-size: 12px; }
-    .control-panel { width: 260px; padding: 16px; }
+    .control-panel { width: 260px; padding: 16px; bottom: auto; top: 80px; }
+    .double-panel { width: 280px; }
+    .windows-container { height: auto; min-height: 500px; }
 }
