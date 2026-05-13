@@ -27,12 +27,13 @@
     
     DragManager.prototype = {
         _bindEvents: function() {
-            this.element.addEventListener('mousedown', this._onMouseDown.bind(this));
-            document.addEventListener('mousemove', this._onMouseMove.bind(this));
-            document.addEventListener('mouseup', this._onMouseUp.bind(this));
-            this.element.addEventListener('touchstart', this._onTouchStart.bind(this), { passive: false });
-            document.addEventListener('touchmove', this._onTouchMove.bind(this), { passive: false });
-            document.addEventListener('touchend', this._onTouchEnd.bind(this));
+            var self = this;
+            this.element.addEventListener('mousedown', function(e) { self._onMouseDown(e); });
+            document.addEventListener('mousemove', function(e) { self._onMouseMove(e); });
+            document.addEventListener('mouseup', function(e) { self._onMouseUp(e); });
+            this.element.addEventListener('touchstart', function(e) { self._onTouchStart(e); }, { passive: false });
+            document.addEventListener('touchmove', function(e) { self._onTouchMove(e); }, { passive: false });
+            document.addEventListener('touchend', function(e) { self._onTouchEnd(e); });
         },
         
         _onMouseDown: function(e) {
@@ -291,28 +292,34 @@
             var self = this;
             var titleBar = this.element.querySelector('.title-bar');
             
-            this.windowDrag = new DragManager(this.element, {
-                onMove: function(x, y) {
-                    self.savedPosition = {
-                        left: x, top: y,
-                        width: self.element.offsetWidth,
-                        height: self.element.offsetHeight
-                    };
-                }
-            });
-            this.windowDrag.setEnabled(true);
+            if (titleBar) {
+                this.windowDrag = new DragManager(this.element, {
+                    onMove: function(x, y) {
+                        self.savedPosition = {
+                            left: x, top: y,
+                            width: self.element.offsetWidth,
+                            height: self.element.offsetHeight
+                        };
+                    }
+                });
+                this.windowDrag.setEnabled(true);
+            }
             
-            this.buttonDrag = new DragManager(this.button);
+            if (this.button) {
+                this.buttonDrag = new DragManager(this.button);
+            }
         },
         
         _initEvents: function() {
             var self = this;
             
-            this.button.addEventListener('click', function() {
-                if (!self.buttonDrag.isDragging()) {
-                    self.toggle();
-                }
-            });
+            if (this.button) {
+                this.button.addEventListener('click', function() {
+                    if (!self.buttonDrag || !self.buttonDrag.isDragging()) {
+                        self.toggle();
+                    }
+                });
+            }
             
             var minimizeTrigger = this.element.querySelector('.minimize-btn');
             if (minimizeTrigger) {
@@ -358,7 +365,7 @@
                 this.element.style.left = Math.max(5, left) + 'px';
                 this.element.style.top = Math.max(5, top) + 'px';
             }
-            if (this.button.style.left) {
+            if (this.button && this.button.style.left) {
                 var btnLeft = Math.max(5, Math.min(parseFloat(this.button.style.left), window.innerWidth - this.button.offsetWidth - 5));
                 var btnTop = Math.max(5, Math.min(parseFloat(this.button.style.top), window.innerHeight - this.button.offsetHeight - 5));
                 this.button.style.left = btnLeft + 'px';
@@ -367,6 +374,7 @@
         },
         
         _getButtonCenter: function() {
+            if (!this.button) return { x: 0, y: 0 };
             var r = this.button.getBoundingClientRect();
             return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
         },
@@ -403,8 +411,8 @@
             this.element.style.height = winRect.height + 'px';
             this.element.style.zIndex = '1000';
             
-            this.windowDrag.setEnabled(false);
-            this.buttonDrag.setEnabled(false);
+            if (this.windowDrag) this.windowDrag.setEnabled(false);
+            if (this.buttonDrag) this.buttonDrag.setEnabled(false);
             
             var animator = new GenieAnimator(this.options);
             var animName = animator.createMinimizeAnimation(btnCenter, winRect, direction);
@@ -419,9 +427,11 @@
                 self._cleanAnimation();
                 self.isAnimating = false;
                 self.isMinimized = true;
-                self.button.innerHTML = '✨ Restaurer';
-                self.button.classList.add('restore-mode');
-                self.buttonDrag.setEnabled(true);
+                if (self.button) {
+                    self.button.innerHTML = '✨ Restaurer';
+                    self.button.classList.add('restore-mode');
+                }
+                if (self.buttonDrag) self.buttonDrag.setEnabled(true);
             };
             
             this.element.addEventListener('animationend', onEnd, { once: true });
@@ -479,10 +489,12 @@
                 self._cleanAnimation();
                 self.isAnimating = false;
                 self.isMinimized = false;
-                self.windowDrag.setEnabled(true);
-                self.buttonDrag.setEnabled(true);
-                self.button.innerHTML = '🪔 Minimiser';
-                self.button.classList.remove('restore-mode');
+                if (self.windowDrag) self.windowDrag.setEnabled(true);
+                if (self.buttonDrag) self.buttonDrag.setEnabled(true);
+                if (self.button) {
+                    self.button.innerHTML = '🪔 Minimiser';
+                    self.button.classList.remove('restore-mode');
+                }
             };
             
             this.element.addEventListener('animationend', onEnd, { once: true });
@@ -636,6 +648,10 @@
                 var surface = this.element.querySelector('.window-surface');
                 if (surface) surface.style.borderRadius = '0';
                 this.isMaximized = true;
+                
+                var rect = this.element.getBoundingClientRect();
+                this.windowLeft = rect.left;
+                this.windowTop = rect.top;
             } else {
                 this.element.style.left = this.normalLeft + 'px';
                 this.element.style.top = this.normalTop + 'px';
@@ -645,7 +661,14 @@
                 var surface = this.element.querySelector('.window-surface');
                 if (surface) surface.style.borderRadius = '24px';
                 this.isMaximized = false;
+                
+                var rect = this.element.getBoundingClientRect();
+                this.windowLeft = rect.left;
+                this.windowTop = rect.top;
             }
+            
+            this.skewVelX += (Math.random() - 0.5) * 2;
+            this.skewVelY += (Math.random() - 0.5) * 2;
         },
         
         _onMouseDown: function(e) {
@@ -775,7 +798,11 @@
         },
         
         updateParams: function(newParams) {
-            Object.assign(this.options, newParams);
+            for (var key in newParams) {
+                if (newParams.hasOwnProperty(key) && this.options.hasOwnProperty(key)) {
+                    this.options[key] = newParams[key];
+                }
+            }
         }
     };
 
@@ -802,6 +829,7 @@
         
         this.genie = null;
         this.wobbly = null;
+        this._originalUpdatePhysics = null;
         this._init();
     }
     
@@ -810,11 +838,11 @@
         
         _init: function() {
             var self = this;
+            
             this.genie = new GenieEffect(this.element, this.button, this.genieOptions);
             this.wobbly = new WobblyWindow(this.element, this.wobblyOptions);
             
-            var wobblyUpdate = this.wobbly._updatePhysics.bind(this.wobbly);
-            var wobblyApply = this.wobbly._applyTransform.bind(this.wobbly);
+            this._originalUpdatePhysics = this.wobbly._updatePhysics.bind(this.wobbly);
             
             this.wobbly._updatePhysics = function() {
                 var spring = this.options.springSpeed;
@@ -872,6 +900,10 @@
         
         bringToFront: function() {
             if (this.wobbly) this.wobbly.bringToFront();
+        },
+        
+        toggleMaximize: function() {
+            if (this.wobbly) this.wobbly.toggleMaximize();
         }
     };
 
