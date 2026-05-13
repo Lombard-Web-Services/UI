@@ -1,244 +1,172 @@
-/**
- * UI-Library - Bibliothèque d'effets UX/UI JavaScript
- * Utilisation de prototypes et classes constructeurs
- * 
- * @author Thibaut Lombard
- * @version 1.0.0
- */
+// ============================================================
+// UI-Library.js
+// Bibliothèque d'effets UI/UX par Thibaut Lombard
+// Modules: Lampe Magique (GenieEffect) & Wobbly Windows (CompizStyle)
+// Basée sur les principes de "Secrets of the JavaScript Ninja"
+// ============================================================
 
 (function(global) {
     'use strict';
 
     // ============================================================
-    // UTILITAIRES
+    // MODULE 1: LAMPE MAGIQUE (GenieEffect)
+    // Effet de minimisation/restauration avec déformation directionnelle
     // ============================================================
     
-    const Utils = {
-        extend: function(target, source) {
-            for (let key in source) {
-                if (source.hasOwnProperty(key)) {
-                    target[key] = source[key];
-                }
-            }
-            return target;
-        },
-        
-        getCenter: function(element) {
-            const rect = element.getBoundingClientRect();
-            return {
-                x: rect.left + rect.width / 2,
-                y: rect.top + rect.height / 2
-            };
-        },
-        
-        pointInRect: function(x, y, rect) {
-            return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
-        },
-        
-        generateId: function(prefix) {
-            return prefix + '-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-        },
-        
-        clamp: function(value, min, max) {
-            return Math.min(Math.max(value, min), max);
-        },
-        
-        lerp: function(start, end, t) {
-            return start + (end - start) * t;
-        }
-    };
-
-    // ============================================================
-    // GESTIONNAIRE DE DRAG & DROP (Prototype)
-    // ============================================================
-    
-    function DragManager(element, options) {
+    function GenieEffect(element, options) {
         this.element = element;
-        this.options = Utils.extend({
-            enabled: true,
-            handle: null,
-            onStart: function() {},
-            onMove: function(x, y) {},
-            onEnd: function() {}
-        }, options || {});
+        this.options = {
+            duration: (options && options.duration) || 700,
+            skewIntensity: (options && options.skewIntensity) || 50,
+            glassEnabled: (options && options.glassEnabled !== undefined) ? options.glassEnabled : true
+        };
         
-        this._isDragging = false;
-        this._offsetX = 0;
-        this._offsetY = 0;
-        this._startX = 0;
-        this._startY = 0;
+        this.isMinimized = false;
+        this.isAnimating = false;
+        this.savedPosition = null;
+        this.activeStyleId = null;
+        this.button = null;
+        this.minimizeTrigger = null;
         
-        this._bindEvents();
+        this._init();
     }
     
-    DragManager.prototype = {
-        constructor: DragManager,
+    GenieEffect.prototype = {
+        constructor: GenieEffect,
         
-        _bindEvents: function() {
-            const handle = this.options.handle || this.element;
+        _init: function() {
+            this._createButton();
+            this._setupDrag();
+            this._saveInitialPosition();
+        },
+        
+        _createButton: function() {
+            var self = this;
+            this.button = document.createElement('button');
+            this.button.className = 'ui-control-btn';
+            this.button.innerHTML = '🪔 Minimiser';
+            this.button.style.cssText = 'position:fixed;bottom:40px;right:40px;padding:14px 32px;background:rgba(255,189,46,0.25);backdrop-filter:blur(16px);color:#ffbd2e;border:1px solid rgba(255,189,46,0.5);border-radius:60px;font-size:15px;font-weight:700;cursor:grab;z-index:100;font-family:monospace;user-select:none;transition:all 0.3s;';
             
-            handle.addEventListener('mousedown', this._onMouseDown.bind(this));
-            document.addEventListener('mousemove', this._onMouseMove.bind(this));
-            document.addEventListener('mouseup', this._onMouseUp.bind(this));
+            this.button.addEventListener('click', function() {
+                if (!self._isDragging) {
+                    self.toggle();
+                }
+            });
             
-            handle.addEventListener('touchstart', this._onTouchStart.bind(this), { passive: false });
-            document.addEventListener('touchmove', this._onTouchMove.bind(this), { passive: false });
-            document.addEventListener('touchend', this._onTouchEnd.bind(this));
+            document.body.appendChild(this.button);
+            this._setupButtonDrag();
         },
         
-        _onMouseDown: function(e) {
-            if (!this.options.enabled) return;
-            e.preventDefault();
-            this._startDrag(e.clientX, e.clientY);
-        },
-        
-        _onTouchStart: function(e) {
-            if (!this.options.enabled || e.touches.length !== 1) return;
-            e.preventDefault();
-            this._startDrag(e.touches[0].clientX, e.touches[0].clientY);
-        },
-        
-        _startDrag: function(clientX, clientY) {
-            this._isDragging = true;
-            this.element.classList.add('dragging');
+        _setupButtonDrag: function() {
+            var self = this;
+            var isDragging = false;
+            var offsetX, offsetY;
             
-            const rect = this.element.getBoundingClientRect();
-            this._offsetX = clientX - rect.left;
-            this._offsetY = clientY - rect.top;
-            this._startX = rect.left;
-            this._startY = rect.top;
+            this.button.addEventListener('mousedown', function(e) {
+                isDragging = true;
+                self._isDragging = true;
+                offsetX = e.clientX - self.button.offsetLeft;
+                offsetY = e.clientY - self.button.offsetTop;
+                self.button.style.position = 'fixed';
+                self.button.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
             
-            this.element.style.position = 'fixed';
-            this.element.style.left = rect.left + 'px';
-            this.element.style.top = rect.top + 'px';
-            this.element.style.bottom = 'auto';
-            this.element.style.right = 'auto';
+            document.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+                var left = e.clientX - offsetX;
+                var top = e.clientY - offsetY;
+                left = Math.max(5, Math.min(left, window.innerWidth - self.button.offsetWidth - 5));
+                top = Math.max(5, Math.min(top, window.innerHeight - self.button.offsetHeight - 5));
+                self.button.style.left = left + 'px';
+                self.button.style.top = top + 'px';
+                self.button.style.bottom = 'auto';
+                self.button.style.right = 'auto';
+            });
             
-            this.options.onStart.call(this, rect.left, rect.top);
+            document.addEventListener('mouseup', function() {
+                if (isDragging) {
+                    isDragging = false;
+                    self._isDragging = false;
+                    self.button.style.cursor = 'grab';
+                }
+            });
         },
         
-        _onMouseMove: function(e) {
-            if (!this._isDragging) return;
-            e.preventDefault();
-            this._drag(e.clientX, e.clientY);
-        },
-        
-        _onTouchMove: function(e) {
-            if (!this._isDragging || e.touches.length !== 1) return;
-            e.preventDefault();
-            this._drag(e.touches[0].clientX, e.touches[0].clientY);
-        },
-        
-        _drag: function(clientX, clientY) {
-            let newLeft = clientX - this._offsetX;
-            let newTop = clientY - this._offsetY;
+        _setupDrag: function() {
+            var self = this;
+            var titleBar = this.element.querySelector('.title-bar');
+            if (!titleBar) return;
             
-            const maxX = window.innerWidth - this.element.offsetWidth;
-            const maxY = window.innerHeight - this.element.offsetHeight;
+            var isDragging = false;
+            var offsetX, offsetY;
             
-            newLeft = Utils.clamp(newLeft, 5, maxX - 5);
-            newTop = Utils.clamp(newTop, 5, maxY - 5);
+            titleBar.addEventListener('mousedown', function(e) {
+                if (self.isAnimating) return;
+                isDragging = true;
+                var rect = self.element.getBoundingClientRect();
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+                self.element.style.position = 'fixed';
+                e.preventDefault();
+            });
             
-            this.element.style.left = newLeft + 'px';
-            this.element.style.top = newTop + 'px';
+            document.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+                var left = e.clientX - offsetX;
+                var top = e.clientY - offsetY;
+                left = Math.max(5, Math.min(left, window.innerWidth - self.element.offsetWidth - 5));
+                top = Math.max(5, Math.min(top, window.innerHeight - self.element.offsetHeight - 5));
+                self.element.style.left = left + 'px';
+                self.element.style.top = top + 'px';
+                self.savedPosition = { left: left, top: top, width: self.element.offsetWidth, height: self.element.offsetHeight };
+            });
             
-            this.options.onMove.call(this, newLeft, newTop);
+            document.addEventListener('mouseup', function() {
+                isDragging = false;
+            });
         },
         
-        _onMouseUp: function() {
-            this._stopDrag();
+        _saveInitialPosition: function() {
+            var rect = this.element.getBoundingClientRect();
+            this.savedPosition = { left: rect.left, top: rect.top, width: rect.width, height: rect.height };
         },
         
-        _onTouchEnd: function() {
-            this._stopDrag();
+        _getDirection: function(buttonRect, windowRect) {
+            var bcx = buttonRect.left + buttonRect.width / 2;
+            var bcy = buttonRect.top + buttonRect.height / 2;
+            var wcx = windowRect.left + windowRect.width / 2;
+            var wcy = windowRect.top + windowRect.height / 2;
+            var dx = bcx - wcx;
+            var dy = bcy - wcy;
+            return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'bottom' : 'top');
         },
         
-        _stopDrag: function() {
-            if (this._isDragging) {
-                this._isDragging = false;
-                this.element.classList.remove('dragging');
-                this.options.onEnd.call(this);
-            }
-        },
-        
-        setEnabled: function(enabled) {
-            this.options.enabled = enabled;
-            this.element.style.cursor = enabled ? 'grab' : 'pointer';
-        },
-        
-        isDragging: function() {
-            return this._isDragging;
-        },
-        
-        getPosition: function() {
-            const rect = this.element.getBoundingClientRect();
-            return { left: rect.left, top: rect.top };
-        },
-        
-        destroy: function() {
-            const handle = this.options.handle || this.element;
-            handle.removeEventListener('mousedown', this._onMouseDown.bind(this));
-            document.removeEventListener('mousemove', this._onMouseMove.bind(this));
-            document.removeEventListener('mouseup', this._onMouseUp.bind(this));
-        }
-    };
-
-    // ============================================================
-    // DÉTECTEUR DE POSITION ET DIRECTION (Module singleton)
-    // ============================================================
-    
-    const PositionDetector = {
-        getDirection: function(buttonRect, windowRect) {
-            const bcx = buttonRect.left + buttonRect.width / 2;
-            const bcy = buttonRect.top + buttonRect.height / 2;
-            const wcx = windowRect.left + windowRect.width / 2;
-            const wcy = windowRect.top + windowRect.height / 2;
-            const dx = bcx - wcx;
-            const dy = bcy - wcy;
-            
-            return Math.abs(dx) > Math.abs(dy) 
-                ? (dx > 0 ? 'right' : 'left') 
-                : (dy > 0 ? 'bottom' : 'top');
-        },
-        
-        getClipPath: function(direction, progress) {
-            const pinch = Math.min(progress * 1.1, 1) * 48;
-            
+        _getClipPath: function(direction, progress) {
+            var pinch = Math.min(progress * 1.1, 1) * 48;
             switch(direction) {
-                case 'top':
-                    return `polygon(${pinch}% 0%, ${100-pinch}% 0%, 100% 100%, 0% 100%)`;
-                case 'bottom':
-                    return `polygon(0% 0%, 100% 0%, ${100-pinch}% 100%, ${pinch}% 100%)`;
-                case 'left':
-                    return `polygon(0% ${pinch}%, 100% 0%, 100% 100%, 0% ${100-pinch}%)`;
-                case 'right':
-                    return `polygon(0% 0%, 100% ${pinch}%, 100% ${100-pinch}%, 0% 100%)`;
-                default:
-                    return 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)';
+                case 'top': return 'polygon(' + pinch + '% 0%, ' + (100-pinch) + '% 0%, 100% 100%, 0% 100%)';
+                case 'bottom': return 'polygon(0% 0%, 100% 0%, ' + (100-pinch) + '% 100%, ' + pinch + '% 100%)';
+                case 'left': return 'polygon(0% ' + pinch + '%, 100% 0%, 100% 100%, 0% ' + (100-pinch) + '%)';
+                case 'right': return 'polygon(0% 0%, 100% ' + pinch + '%, 100% ' + (100-pinch) + '%, 0% 100%)';
+                default: return 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)';
             }
         },
         
-        getStartPosition: function(buttonRect, targetRect, direction) {
-            const centerX = buttonRect.left + buttonRect.width / 2;
-            const centerY = buttonRect.top + buttonRect.height / 2;
-            
+        _getStartPosition: function(buttonRect, targetRect, direction) {
+            var centerX = buttonRect.left + buttonRect.width / 2;
+            var centerY = buttonRect.top + buttonRect.height / 2;
             switch(direction) {
-                case 'top':
-                    return { x: centerX - targetRect.width / 2, y: buttonRect.bottom };
-                case 'bottom':
-                    return { x: centerX - targetRect.width / 2, y: buttonRect.top - targetRect.height };
-                case 'left':
-                    return { x: buttonRect.right, y: centerY - targetRect.height / 2 };
-                case 'right':
-                    return { x: buttonRect.left - targetRect.width, y: centerY - targetRect.height / 2 };
-                default:
-                    return { x: buttonRect.left, y: buttonRect.top };
+                case 'top': return { x: centerX - targetRect.width / 2, y: buttonRect.bottom };
+                case 'bottom': return { x: centerX - targetRect.width / 2, y: buttonRect.top - targetRect.height };
+                case 'left': return { x: buttonRect.right, y: centerY - targetRect.height / 2 };
+                case 'right': return { x: buttonRect.left - targetRect.width, y: centerY - targetRect.height / 2 };
+                default: return { x: buttonRect.left, y: buttonRect.top };
             }
         },
         
-        getSkew: function(direction, intensity, progress) {
-            const easing = 1 - Math.pow(progress, 1.2);
-            
+        _getSkew: function(direction, intensity, progress) {
+            var easing = 1 - Math.pow(progress, 1.2);
             switch(direction) {
                 case 'right': return intensity * easing;
                 case 'left': return -intensity * easing;
@@ -246,337 +174,214 @@
                 case 'top': return -intensity * 0.4 * easing;
                 default: return 0;
             }
-        }
-    };
-
-    // ============================================================
-    // CONFIGURATION ANIMATION (Singleton avec prototype)
-    // ============================================================
-    
-    function AnimationConfig() {
-        this._duration = 700;
-        this._skewIntensity = 50;
-        this._glassEnabled = true;
-    }
-    
-    AnimationConfig.prototype = {
-        constructor: AnimationConfig,
-        
-        get duration() { return this._duration; },
-        set duration(v) { this._duration = v; },
-        
-        get skewIntensity() { return this._skewIntensity; },
-        set skewIntensity(v) { this._skewIntensity = v; },
-        
-        get glassEnabled() { return this._glassEnabled; },
-        set glassEnabled(v) {
-            this._glassEnabled = v;
-            if (typeof document !== 'undefined') {
-                document.body.classList.toggle('no-glass', !v);
-            }
-        }
-    };
-    
-    AnimationConfig.getInstance = (function() {
-        let instance = null;
-        return function() {
-            if (!instance) {
-                instance = new AnimationConfig();
-            }
-            return instance;
-        };
-    })();
-
-    // ============================================================
-    // ANIMATEUR GENIE (Prototype)
-    // ============================================================
-    
-    function GenieAnimator(config) {
-        this.config = config || AnimationConfig.getInstance();
-        this._activeStyleId = null;
-    }
-    
-    GenieAnimator.prototype = {
-        constructor: GenieAnimator,
-        
-        _clean: function() {
-            if (this._activeStyleId) {
-                const el = document.getElementById(this._activeStyleId);
-                if (el) el.remove();
-                this._activeStyleId = null;
-            }
         },
         
-        createMinimizeAnimation: function(buttonCenter, windowRect, direction) {
-            this._clean();
+        _createAnimationKeyframes: function(isMinimize, buttonCenter, windowRect, direction) {
+            if (this.activeStyleId) {
+                var oldStyle = document.getElementById(this.activeStyleId);
+                if (oldStyle) oldStyle.remove();
+            }
             
-            const styleId = Utils.generateId('genie-min');
-            const style = document.createElement('style');
+            var styleId = 'genie-anim-' + Date.now();
+            var style = document.createElement('style');
             style.id = styleId;
             
-            const startX = windowRect.left + windowRect.width / 2;
-            const startY = windowRect.top + windowRect.height / 2;
-            const deltaX = buttonCenter.x - startX;
-            const deltaY = buttonCenter.y - startY;
-            const maxSkew = this.config.skewIntensity;
+            var startX = windowRect.left + windowRect.width / 2;
+            var startY = windowRect.top + windowRect.height / 2;
+            var deltaX = buttonCenter.x - startX;
+            var deltaY = buttonCenter.y - startY;
+            var maxSkew = this.options.skewIntensity;
+            var duration = this.options.duration;
             
-            let keyframes = '@keyframes genieMinimize {\n';
-            const steps = [0, 0.08, 0.18, 0.3, 0.42, 0.54, 0.66, 0.77, 0.88, 0.95, 1];
+            var keyframes = '@keyframes genieAnimation {\n';
+            var steps = [0, 0.08, 0.18, 0.3, 0.42, 0.54, 0.66, 0.77, 0.88, 0.95, 1];
             
-            for (let i = 0; i < steps.length; i++) {
-                const p = steps[i];
-                const percent = Math.round(p * 100);
-                const ease = Math.pow(p, 1.4);
-                const tx = deltaX * ease;
-                const ty = deltaY * ease;
-                const sx = Math.max(1 - p * 1.15, 0.01);
-                const sy = Math.max(1 - p * 1.35, 0.01);
-                const skew = PositionDetector.getSkew(direction, maxSkew, p);
+            for (var i = 0; i < steps.length; i++) {
+                var p = steps[i];
+                var percent = Math.round(p * 100);
+                var ease = Math.pow(p, isMinimize ? 1.4 : 1.2);
+                var tx = deltaX * ease;
+                var ty = deltaY * ease;
+                var sx = Math.max(isMinimize ? 1 - p * 1.15 : Math.min(p * 1.15, 1), 0.01);
+                var sy = Math.max(isMinimize ? 1 - p * 1.35 : Math.min(p * 1.35, 1), 0.01);
+                var skew = this._getSkew(direction, maxSkew, isMinimize ? p : 1 - p);
+                var clipPath = this._getClipPath(direction, isMinimize ? p : 1 - p);
+                var opacity = isMinimize ? Math.max(1 - p * 1.2, 0) : Math.min(p * 1.3, 1);
                 
-                keyframes += ` ${percent}% {
-                    transform: translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${sx.toFixed(3)}, ${sy.toFixed(3)}) skew(${skew.toFixed(1)}deg);
-                    clip-path: ${PositionDetector.getClipPath(direction, p)};
-                    opacity: ${Math.max(1 - p * 1.2, 0).toFixed(3)};
-                }\n`;
+                keyframes += ' ' + percent + '% {\n';
+                keyframes += '   transform: translate(' + tx.toFixed(1) + 'px, ' + ty.toFixed(1) + 'px) scale(' + sx.toFixed(3) + ', ' + sy.toFixed(3) + ') skew(' + skew.toFixed(1) + 'deg);\n';
+                keyframes += '   clip-path: ' + clipPath + ';\n';
+                keyframes += '   opacity: ' + opacity.toFixed(3) + ';\n';
+                keyframes += ' }\n';
             }
             
             keyframes += '}';
             style.textContent = keyframes;
             document.head.appendChild(style);
-            this._activeStyleId = styleId;
-            
-            return 'genieMinimize';
-        },
-        
-        createRestoreAnimation: function(startCenter, targetRect, direction) {
-            this._clean();
-            
-            const styleId = Utils.generateId('genie-res');
-            const style = document.createElement('style');
-            style.id = styleId;
-            
-            const targetCenterX = targetRect.left + targetRect.width / 2;
-            const targetCenterY = targetRect.top + targetRect.height / 2;
-            const deltaX = targetCenterX - startCenter.x;
-            const deltaY = targetCenterY - startCenter.y;
-            const maxSkew = this.config.skewIntensity;
-            
-            let keyframes = '@keyframes genieRestore {\n';
-            const steps = [0, 0.05, 0.12, 0.23, 0.34, 0.46, 0.58, 0.70, 0.82, 0.92, 1];
-            
-            for (let i = 0; i < steps.length; i++) {
-                const p = steps[i];
-                const percent = Math.round(p * 100);
-                const ease = Math.pow(p, 1.2);
-                const tx = deltaX * ease;
-                const ty = deltaY * ease;
-                const sx = Math.min(p * 1.15, 1);
-                const sy = Math.min(p * 1.35, 1);
-                const skew = PositionDetector.getSkew(direction, maxSkew, 1 - p);
-                
-                keyframes += ` ${percent}% {
-                    transform: translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${sx.toFixed(3)}, ${sy.toFixed(3)}) skew(${skew.toFixed(1)}deg);
-                    clip-path: ${PositionDetector.getClipPath(direction, 1 - p)};
-                    opacity: ${Math.min(p * 1.3, 1).toFixed(3)};
-                }\n`;
-            }
-            
-            keyframes += '}';
-            style.textContent = keyframes;
-            document.head.appendChild(style);
-            this._activeStyleId = styleId;
-            
-            return 'genieRestore';
-        },
-        
-        reset: function() {
-            this._clean();
-        }
-    };
-
-    // ============================================================
-    // LAMPE MAGIQUE - CLASSE PRINCIPALE (Prototype)
-    // ============================================================
-    
-    function LampeMagique(containerOrOptions) {
-        if (typeof containerOrOptions === 'string') {
-            this.container = document.querySelector(containerOrOptions);
-            this.options = {};
-        } else if (containerOrOptions instanceof HTMLElement) {
-            this.container = containerOrOptions;
-            this.options = {};
-        } else if (typeof containerOrOptions === 'object') {
-            this.options = containerOrOptions || {};
-            this.container = this.options.container ? 
-                (typeof this.options.container === 'string' ? 
-                    document.querySelector(this.options.container) : 
-                    this.options.container) :
-                null;
-        }
-        
-        if (!this.container) {
-            console.error('UI-Library LampeMagique: Container requis non trouvé');
-            return;
-        }
-        
-        this.config = AnimationConfig.getInstance();
-        this.animator = new GenieAnimator(this.config);
-        
-        this.windowEl = this.container.querySelector('.window') || this.container;
-        this.titleBar = this.container.querySelector('.title-bar') || this.windowEl.querySelector('.title-bar');
-        this.minimizeBtn = this.container.querySelector('.minimize-btn') || this.container.querySelector('#minimizeTrigger');
-        
-        this.isMinimized = false;
-        this.isAnimating = false;
-        this.buttonRect = null;
-        this.windowRect = null;
-        
-        this._init();
-    }
-    
-    LampeMagique.prototype = {
-        constructor: LampeMagique,
-        
-        _init: function() {
-            this.dragManager = new DragManager(this.windowEl, {
-                handle: this.titleBar,
-                onMove: this._onWindowMove.bind(this)
-            });
-            
-            if (this.minimizeBtn) {
-                this.minimizeBtn.addEventListener('click', this._onMinimizeClick.bind(this));
-            }
-            
-            this._onWindowMove();
-        },
-        
-        _onWindowMove: function() {
-            this.windowRect = this.windowEl.getBoundingClientRect();
-            if (this.minimizeBtn) {
-                this.buttonRect = this.minimizeBtn.getBoundingClientRect();
-            }
-        },
-        
-        _onMinimizeClick: function(e) {
-            e.stopPropagation();
-            if (this.isAnimating) return;
-            
-            this.buttonRect = this.minimizeBtn.getBoundingClientRect();
-            
-            if (!this.isMinimized) {
-                this.minimize();
-            } else {
-                this.restore();
-            }
+            this.activeStyleId = styleId;
+            return 'genieAnimation';
         },
         
         minimize: function() {
-            if (this.isAnimating) return;
+            if (this.isMinimized || this.isAnimating) return;
             this.isAnimating = true;
             
-            this.buttonRect = this.minimizeBtn.getBoundingClientRect();
-            this.windowRect = this.windowEl.getBoundingClientRect();
+            var winRect = this.element.getBoundingClientRect();
+            this.savedPosition = {
+                left: winRect.left,
+                top: winRect.top,
+                width: winRect.width,
+                height: winRect.height
+            };
             
-            const direction = PositionDetector.getDirection(this.buttonRect, this.windowRect);
-            const buttonCenter = Utils.getCenter(this.minimizeBtn);
+            var buttonRect = this.button.getBoundingClientRect();
+            var buttonCenter = { x: buttonRect.left + buttonRect.width / 2, y: buttonRect.top + buttonRect.height / 2 };
+            var direction = this._getDirection(buttonRect, winRect);
             
-            const animationName = this.animator.createMinimizeAnimation(buttonCenter, this.windowRect, direction);
+            this.element.style.position = 'fixed';
+            this.element.style.left = winRect.left + 'px';
+            this.element.style.top = winRect.top + 'px';
+            this.element.style.width = winRect.width + 'px';
+            this.element.style.height = winRect.height + 'px';
+            this.element.style.zIndex = '1000';
             
-            this.windowEl.style.animation = `${animationName} ${this.config.duration}ms cubic-bezier(0.65, 0, 0.35, 1) forwards`;
+            var animName = this._createAnimationKeyframes(true, buttonCenter, winRect, direction);
+            this.element.style.animation = animName + ' ' + this.options.duration + 'ms cubic-bezier(0.4, 0, 0.2, 1) forwards';
             
-            setTimeout(() => {
-                this.windowEl.style.display = 'none';
-                this.isMinimized = true;
-                this.isAnimating = false;
-                this.minimizeBtn.classList.add('restore-mode');
-                this.animator.reset();
-                this.windowEl.style.animation = '';
-            }, this.config.duration);
+            var self = this;
+            var onEnd = function() {
+                self.element.removeEventListener('animationend', onEnd);
+                self.element.style.display = 'none';
+                self.element.style.visibility = 'hidden';
+                self._cleanAnimation();
+                self.isAnimating = false;
+                self.isMinimized = true;
+                self.button.innerHTML = '✨ Restaurer';
+                self.button.classList.add('restore-mode');
+            };
+            
+            this.element.addEventListener('animationend', onEnd, { once: true });
+            setTimeout(function() { if (self.isAnimating) onEnd(); }, this.options.duration + 100);
         },
         
         restore: function() {
-            if (this.isAnimating) return;
+            if (!this.isMinimized || this.isAnimating) return;
             this.isAnimating = true;
             
-            this.buttonRect = this.minimizeBtn.getBoundingClientRect();
-            this.windowEl.style.display = 'block';
-            
-            const targetRect = {
-                width: this.windowEl.offsetWidth,
-                height: this.windowEl.offsetHeight,
-                left: parseFloat(this.windowEl.style.left) || this.windowEl.offsetLeft,
-                top: parseFloat(this.windowEl.style.top) || this.windowEl.offsetTop
+            var buttonRect = this.button.getBoundingClientRect();
+            var target = this.savedPosition || {
+                left: (window.innerWidth - 580) / 2,
+                top: (window.innerHeight - 470) / 2,
+                width: 580,
+                height: 470
             };
             
-            const direction = PositionDetector.getDirection(this.buttonRect, targetRect);
-            const startCenter = {
-                x: this.buttonRect.left + this.buttonRect.width / 2,
-                y: this.buttonRect.top + this.buttonRect.height / 2
+            var direction = this._getDirection(buttonRect, target);
+            var startPos = this._getStartPosition(buttonRect, target, direction);
+            var startCenter = { x: startPos.x + target.width / 2, y: startPos.y + target.height / 2 };
+            
+            this.element.style.display = 'block';
+            this.element.style.visibility = 'visible';
+            this.element.style.position = 'fixed';
+            this.element.style.left = startPos.x + 'px';
+            this.element.style.top = startPos.y + 'px';
+            this.element.style.width = target.width + 'px';
+            this.element.style.height = target.height + 'px';
+            this.element.style.zIndex = '1000';
+            this.element.style.opacity = '0';
+            
+            void this.element.offsetHeight;
+            
+            var animName = this._createAnimationKeyframes(false, startCenter, target, direction);
+            this.element.style.animation = animName + ' ' + this.options.duration + 'ms cubic-bezier(0.23, 1, 0.32, 1) forwards';
+            this.element.style.opacity = '1';
+            
+            var self = this;
+            var onEnd = function() {
+                self.element.removeEventListener('animationend', onEnd);
+                self.element.style.position = '';
+                self.element.style.left = target.left + 'px';
+                self.element.style.top = target.top + 'px';
+                self.element.style.width = '';
+                self.element.style.height = '';
+                self.element.style.zIndex = '';
+                self.element.style.animation = '';
+                self.element.style.opacity = '';
+                self._cleanAnimation();
+                self.isAnimating = false;
+                self.isMinimized = false;
+                self.button.innerHTML = '🪔 Minimiser';
+                self.button.classList.remove('restore-mode');
             };
             
-            const animationName = this.animator.createRestoreAnimation(startCenter, targetRect, direction);
-            
-            this.windowEl.style.animation = `${animationName} ${this.config.duration}ms cubic-bezier(0.35, 0, 0.65, 1) forwards`;
-            
-            setTimeout(() => {
-                this.isMinimized = false;
-                this.isAnimating = false;
-                this.minimizeBtn.classList.remove('restore-mode');
-                this.animator.reset();
-                this.windowEl.style.animation = '';
-            }, this.config.duration);
+            this.element.addEventListener('animationend', onEnd, { once: true });
+            setTimeout(function() { if (self.isAnimating) onEnd(); }, this.options.duration + 150);
         },
         
-        setDuration: function(ms) {
-            this.config.duration = ms;
+        _cleanAnimation: function() {
+            if (this.activeStyleId) {
+                var style = document.getElementById(this.activeStyleId);
+                if (style) style.remove();
+                this.activeStyleId = null;
+            }
         },
         
-        setSkewIntensity: function(intensity) {
-            this.config.skewIntensity = intensity;
+        toggle: function() {
+            if (!this.isAnimating) {
+                this.isMinimized ? this.restore() : this.minimize();
+            }
         },
         
-        setGlassEnabled: function(enabled) {
-            this.config.glassEnabled = enabled;
+        updateOptions: function(options) {
+            if (options.duration !== undefined) this.options.duration = options.duration;
+            if (options.skewIntensity !== undefined) this.options.skewIntensity = options.skewIntensity;
+            if (options.glassEnabled !== undefined) {
+                this.options.glassEnabled = options.glassEnabled;
+                document.body.classList.toggle('no-glass', !options.glassEnabled);
+            }
         },
         
         destroy: function() {
-            if (this.dragManager) this.dragManager.destroy();
-            this.animator.reset();
+            if (this.button && this.button.parentNode) this.button.parentNode.removeChild(this.button);
+            this._cleanAnimation();
         }
     };
-
+    
+    
     // ============================================================
-    // FENÊTRE WOBBLY - CLASSE PRINCIPALE (Prototype)
+    // MODULE 2: WOBBLY WINDOWS (CompizStyle)
+    // Effet de déformation élastique lors du déplacement
     // ============================================================
     
     function WobblyWindow(element, options) {
         this.element = element;
-        this.options = Utils.extend({
-            springSpeed: 0.15,
-            damping: 0.85,
-            rotationFactor: 0.3,
-            titleBarSelector: '.window-titlebar',
-            onMaximize: function() {},
-            onRestore: function() {},
-            onClose: function() {}
-        }, options || {});
+        this.options = {
+            intensity: (options && options.intensity) || 1.2,
+            springSpeed: (options && options.springSpeed) || 0.14,
+            damping: (options && options.damping) || 0.89,
+            dragForce: (options && options.dragForce) || 2.0,
+            maxSkew: 14,
+            maxScale: 0.12
+        };
         
-        this.surface = this.element.querySelector('.window-surface') || this.element;
-        this.titleBar = this.element.querySelector(this.options.titleBarSelector);
-        
+        this.isDragging = false;
         this.isMaximized = false;
-        this.normalState = { left: 0, top: 0, width: 0, height: 0 };
+        this.normalLeft = 0;
+        this.normalTop = 0;
+        this.normalWidth = 0;
+        this.normalHeight = 0;
         
         this.currentSkewX = 0;
         this.currentSkewY = 0;
+        this.currentScaleX = 1;
+        this.currentScaleY = 1;
         this.currentRotate = 0;
+        
         this.skewVelX = 0;
         this.skewVelY = 0;
+        this.scaleVelX = 0;
+        this.scaleVelY = 0;
         this.rotateVel = 0;
-        
-        this.dragOffset = { x: 0, y: 0 };
-        this.lastPos = { x: 0, y: 0 };
-        this.velocity = { x: 0, y: 0 };
         
         this._init();
     }
@@ -585,181 +390,180 @@
         constructor: WobblyWindow,
         
         _init: function() {
-            this._setupDrag();
-            this._setupButtons();
-            this._startAnimationLoop();
-        },
-        
-        _setupDrag: function() {
-            if (!this.titleBar) return;
+            this.element.style.transformOrigin = 'center center';
+            this.element.style.willChange = 'transform, left, top';
             
-            const handle = this.titleBar;
+            var titlebar = this.element.querySelector('[data-drag-handle]');
+            if (titlebar) {
+                titlebar.addEventListener('mousedown', this._onMouseDown.bind(this));
+            }
             
-            handle.addEventListener('mousedown', this._onDragStart.bind(this));
-            document.addEventListener('mousemove', this._onDragMove.bind(this));
-            document.addEventListener('mouseup', this._onDragEnd.bind(this));
-            
-            handle.addEventListener('touchstart', this._onTouchStart.bind(this), { passive: false });
-            document.addEventListener('touchmove', this._onTouchMove.bind(this), { passive: false });
-            document.addEventListener('touchend', this._onDragEnd.bind(this));
-        },
-        
-        _onDragStart: function(e) {
-            if (this.isMaximized) return;
-            e.preventDefault();
-            
-            const rect = this.element.getBoundingClientRect();
-            this.dragOffset.x = e.clientX - rect.left;
-            this.dragOffset.y = e.clientY - rect.top;
-            this.lastPos.x = e.clientX;
-            this.lastPos.y = e.clientY;
-            this.velocity.x = 0;
-            this.velocity.y = 0;
-            
-            this.element.classList.add('dragging');
-        },
-        
-        _onDragMove: function(e) {
-            if (this.isMaximized) return;
-            if (!this.dragOffset.x && !this.dragOffset.y) return;
-            
-            e.preventDefault();
-            
-            const newX = e.clientX - this.dragOffset.x;
-            const newY = e.clientY - this.dragOffset.y;
-            
-            this.velocity.x = e.clientX - this.lastPos.x;
-            this.velocity.y = e.clientY - this.lastPos.y;
-            
-            this.lastPos.x = e.clientX;
-            this.lastPos.y = e.clientY;
-            
-            this.element.style.left = newX + 'px';
-            this.element.style.top = newY + 'px';
-            
-            this._applyWobble();
-        },
-        
-        _onTouchStart: function(e) {
-            if (this.isMaximized || e.touches.length !== 1) return;
-            e.preventDefault();
-            
-            const rect = this.element.getBoundingClientRect();
-            this.dragOffset.x = e.touches[0].clientX - rect.left;
-            this.dragOffset.y = e.touches[0].clientY - rect.top;
-            this.lastPos.x = e.touches[0].clientX;
-            this.lastPos.y = e.touches[0].clientY;
-            this.velocity.x = 0;
-            this.velocity.y = 0;
-            
-            this.element.classList.add('dragging');
-        },
-        
-        _onTouchMove: function(e) {
-            if (this.isMaximized || e.touches.length !== 1) return;
-            e.preventDefault();
-            
-            const newX = e.touches[0].clientX - this.dragOffset.x;
-            const newY = e.touches[0].clientY - this.dragOffset.y;
-            
-            this.velocity.x = e.touches[0].clientX - this.lastPos.x;
-            this.velocity.y = e.touches[0].clientY - this.lastPos.y;
-            
-            this.lastPos.x = e.touches[0].clientX;
-            this.lastPos.y = e.touches[0].clientY;
-            
-            this.element.style.left = newX + 'px';
-            this.element.style.top = newY + 'px';
-            
-            this._applyWobble();
-        },
-        
-        _onDragEnd: function() {
-            this.dragOffset.x = 0;
-            this.dragOffset.y = 0;
-            this.element.classList.remove('dragging');
-        },
-        
-        _setupButtons: function() {
-            const buttons = this.element.querySelectorAll('[data-action]');
-            buttons.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const action = btn.getAttribute('data-action');
-                    if (action === 'maximize') {
-                        this.toggleMaximize();
-                    } else if (action === 'close') {
-                        this.options.onClose.call(this);
-                    } else if (action === 'minimize') {
-                        this.minimize();
-                    }
-                });
+            var self = this;
+            this.element.addEventListener('mousedown', function(e) {
+                if (!e.target.closest('.window-btn')) {
+                    self.bringToFront();
+                }
             });
+            
+            this._bindButtons();
+            this._startAnimation();
+        },
+        
+        _bindButtons: function() {
+            var closeBtn = this.element.querySelector('[data-action="close"]');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    self.element.style.display = 'none';
+                });
+            }
+            
+            var minimizeBtn = this.element.querySelector('[data-action="minimize"]');
+            if (minimizeBtn) {
+                minimizeBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    self.element.style.transform = 'scale(0.95)';
+                    setTimeout(function() { self.element.style.transform = ''; }, 250);
+                });
+            }
+            
+            var maximizeBtn = this.element.querySelector('[data-action="maximize"]');
+            if (maximizeBtn) {
+                maximizeBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    self.toggleMaximize();
+                });
+            }
+        },
+        
+        bringToFront: function() {
+            var allWindows = document.querySelectorAll('.wobbly-window');
+            var maxZ = 10;
+            allWindows.forEach(function(win) {
+                var z = parseInt(win.style.zIndex) || 10;
+                if (z > maxZ) maxZ = z;
+                win.classList.remove('focused');
+            });
+            this.element.style.zIndex = maxZ + 1;
+            this.element.classList.add('focused');
         },
         
         toggleMaximize: function() {
+            var self = this;
             if (!this.isMaximized) {
-                this.normalState = {
-                    left: parseFloat(this.element.style.left) || this.element.offsetLeft,
-                    top: parseFloat(this.element.style.top) || this.element.offsetTop,
-                    width: this.element.offsetWidth,
-                    height: this.element.offsetHeight
-                };
+                this.normalLeft = parseFloat(this.element.style.left);
+                this.normalTop = parseFloat(this.element.style.top);
+                this.normalWidth = this.element.offsetWidth;
+                this.normalHeight = this.element.offsetHeight;
                 
                 this.element.style.left = '0';
                 this.element.style.top = '0';
                 this.element.style.width = '100%';
                 this.element.style.height = '100vh';
+                this.element.style.borderRadius = '0';
+                var surface = this.element.querySelector('.window-surface');
+                if (surface) surface.style.borderRadius = '0';
                 this.isMaximized = true;
-                
-                this.options.onMaximize.call(this);
             } else {
-                this.element.style.left = this.normalState.left + 'px';
-                this.element.style.top = this.normalState.top + 'px';
-                this.element.style.width = this.normalState.width + 'px';
-                this.element.style.height = this.normalState.height + 'px';
+                this.element.style.left = this.normalLeft + 'px';
+                this.element.style.top = this.normalTop + 'px';
+                this.element.style.width = this.normalWidth + 'px';
+                this.element.style.height = this.normalHeight + 'px';
+                this.element.style.borderRadius = '24px';
+                var surface = this.element.querySelector('.window-surface');
+                if (surface) surface.style.borderRadius = '24px';
                 this.isMaximized = false;
-                
-                this.options.onRestore.call(this);
             }
         },
         
-        minimize: function() {
-            this.element.style.transition = 'all 0.3s ease';
-            this.element.style.transform = 'scale(0.8) translateY(100vh)';
-            this.element.style.opacity = '0';
+        _onMouseDown: function(e) {
+            if (e.target.closest('.window-btn')) return;
+            e.preventDefault();
+            this.bringToFront();
+            this.isDragging = true;
+            this.element.classList.add('dragging-active');
             
-            setTimeout(() => {
-                this.element.style.display = 'none';
-                this.element.style.transition = '';
-            }, 300);
+            var rect = this.element.getBoundingClientRect();
+            this.dragStartX = e.clientX;
+            this.dragStartY = e.clientY;
+            this.windowLeft = rect.left;
+            this.windowTop = rect.top;
+            this.lastMouseX = e.clientX;
+            this.lastMouseY = e.clientY;
+            
+            var grabOffsetX = (e.clientX - rect.left) / rect.width;
+            var grabOffsetY = (e.clientY - rect.top) / rect.height;
+            this.element.style.transformOrigin = (grabOffsetX * 100) + '% ' + (grabOffsetY * 100) + '%';
+            
+            this.skewVelX += (Math.random() - 0.5) * 1.5;
+            this.skewVelY += (Math.random() - 0.5) * 1.5;
+            
+            document.addEventListener('mousemove', this._onMouseMove.bind(this));
+            document.addEventListener('mouseup', this._onMouseUp.bind(this));
         },
         
-        restore: function() {
-            this.element.style.display = 'block';
-            this.element.style.transition = 'all 0.3s ease';
-            this.element.style.transform = 'scale(1) translateY(0)';
-            this.element.style.opacity = '1';
+        _onMouseMove: function(e) {
+            if (!this.isDragging) return;
+            e.preventDefault();
             
-            setTimeout(() => {
-                this.element.style.transition = '';
-            }, 300);
+            var dx = e.clientX - this.dragStartX;
+            var dy = e.clientY - this.dragStartY;
+            
+            var velX = (e.clientX - this.lastMouseX) * 0.8;
+            var velY = (e.clientY - this.lastMouseY) * 0.8;
+            this.dragVelocityX = velX;
+            this.dragVelocityY = velY;
+            this.lastMouseX = e.clientX;
+            this.lastMouseY = e.clientY;
+            
+            this.element.style.left = (this.windowLeft + dx) + 'px';
+            this.element.style.top = (this.windowTop + dy) + 'px';
+            
+            var intensity = this.options.intensity;
+            var force = this.options.dragForce;
+            
+            var targetSkewX = velY * 0.18 * force * intensity;
+            var targetSkewY = velX * 0.18 * force * intensity;
+            var targetScaleX = 1 + (Math.abs(velX) * 0.012 * force * intensity);
+            var targetScaleY = 1 + (Math.abs(velY) * 0.012 * force * intensity);
+            var targetRotate = (velX - velY) * 0.08 * force * intensity;
+            
+            this.skewVelX += (targetSkewX - this.currentSkewX) * 0.3;
+            this.skewVelY += (targetSkewY - this.currentSkewY) * 0.3;
+            this.scaleVelX += (targetScaleX - this.currentScaleX) * 0.25;
+            this.scaleVelY += (targetScaleY - this.currentScaleY) * 0.25;
+            this.rotateVel += (targetRotate - this.currentRotate) * 0.2;
+            
+            var speed = Math.sqrt(velX * velX + velY * velY);
+            if (speed > 3) {
+                var waveX = Math.sin(Date.now() * 0.02) * speed * 0.05 * intensity;
+                var waveY = Math.cos(Date.now() * 0.02) * speed * 0.05 * intensity;
+                this.skewVelX += waveX;
+                this.skewVelY += waveY;
+            }
         },
         
-        _applyWobble: function() {
-            if (this.isMaximized) return;
+        _onMouseUp: function(e) {
+            if (!this.isDragging) return;
+            this.isDragging = false;
+            this.element.classList.remove('dragging-active');
+            document.removeEventListener('mousemove', this._onMouseMove);
+            document.removeEventListener('mouseup', this._onMouseUp);
             
-            const vx = this.velocity.x * this.options.rotationFactor;
-            const vy = this.velocity.y * this.options.rotationFactor;
+            this.element.style.transformOrigin = 'center center';
             
-            this.skewVelX += vx * 0.1;
-            this.skewVelY += vy * 0.1;
-            this.rotateVel += (vx - vy) * 0.05;
+            var bounceX = (Math.random() - 0.5) * 2.5;
+            var bounceY = (Math.random() - 0.5) * 2.5;
+            this.skewVelX += bounceX;
+            this.skewVelY += bounceY;
+            this.scaleVelX += (Math.random() - 0.5) * 0.05;
+            this.scaleVelY += (Math.random() - 0.5) * 0.05;
+            this.rotateVel += (Math.random() - 0.5) * 1.2;
         },
         
         _updatePhysics: function() {
-            const spring = this.options.springSpeed;
-            const damping = this.options.damping;
+            var spring = this.options.springSpeed;
+            var damping = this.options.damping;
             
             this.skewVelX += (0 - this.currentSkewX) * spring;
             this.skewVelY += (0 - this.currentSkewY) * spring;
@@ -768,159 +572,55 @@
             this.currentSkewX += this.skewVelX;
             this.currentSkewY += this.skewVelY;
             
-            this.rotateVel += (0 - this.currentRotate) * spring * 0.5;
+            this.scaleVelX += (1 - this.currentScaleX) * spring;
+            this.scaleVelY += (1 - this.currentScaleY) * spring;
+            this.scaleVelX *= damping;
+            this.scaleVelY *= damping;
+            this.currentScaleX += this.scaleVelX;
+            this.currentScaleY += this.scaleVelY;
+            
+            this.rotateVel += (0 - this.currentRotate) * spring;
             this.rotateVel *= damping;
             this.currentRotate += this.rotateVel;
             
-            this._render();
+            this.currentSkewX = Math.min(this.options.maxSkew, Math.max(-this.options.maxSkew, this.currentSkewX));
+            this.currentSkewY = Math.min(this.options.maxSkew, Math.max(-this.options.maxSkew, this.currentSkewY));
+            this.currentScaleX = Math.min(1 + this.options.maxScale, Math.max(1 - this.options.maxScale, this.currentScaleX));
+            this.currentScaleY = Math.min(1 + this.options.maxScale, Math.max(1 - this.options.maxScale, this.currentScaleY));
+            this.currentRotate = Math.min(5, Math.max(-5, this.currentRotate));
         },
         
-        _render: function() {
-            const transform = `
-                skew(${this.currentSkewX.toFixed(2)}deg, ${this.currentSkewY.toFixed(2)}deg)
-                rotate(${this.currentRotate.toFixed(2)}deg)
-            `.trim();
-            
+        _applyTransform: function() {
+            var transform = 'translate(0px, 0px) scale(' + this.currentScaleX + ', ' + this.currentScaleY + ') skew(' + this.currentSkewX + 'deg, ' + this.currentSkewY + 'deg) rotate(' + this.currentRotate + 'deg)';
             this.element.style.transform = transform;
         },
         
-        _startAnimationLoop: function() {
-            const loop = () => {
-                this._updatePhysics();
-                requestAnimationFrame(loop);
-            };
-            loop();
+        _startAnimation: function() {
+            var self = this;
+            function animate() {
+                self._updatePhysics();
+                self._applyTransform();
+                requestAnimationFrame(animate);
+            }
+            requestAnimationFrame(animate);
         },
         
-        setParams: function(params) {
-            if (params.springSpeed !== undefined) this.options.springSpeed = params.springSpeed;
-            if (params.damping !== undefined) this.options.damping = params.damping;
-            if (params.rotationFactor !== undefined) this.options.rotationFactor = params.rotationFactor;
-        },
-        
-        destroy: function() {
-            this.element.style.transform = '';
+        updateOptions: function(options) {
+            if (options.intensity !== undefined) this.options.intensity = options.intensity;
+            if (options.springSpeed !== undefined) this.options.springSpeed = options.springSpeed;
+            if (options.damping !== undefined) this.options.damping = options.damping;
+            if (options.dragForce !== undefined) this.options.dragForce = options.dragForce;
         }
     };
-
-    // ============================================================
-    // GESTIONNAIRE DE FENÊTRES WOBBLY (Prototype)
-    // ============================================================
     
-    function WobblyWindowManager(options) {
-        this.options = Utils.extend({
-            container: document.body,
-            themeToggle: null,
-            activePanel: null
-        }, options || {});
-        
-        this.windows = [];
-        this.activeWindow = null;
-        this.isDarkTheme = true;
-        
-        this._init();
-    }
-    
-    WobblyWindowManager.prototype = {
-        constructor: WobblyWindowManager,
-        
-        _init: function() {
-            this._setupThemeToggle();
-            this._setupWindowFocus();
-        },
-        
-        _setupThemeToggle: function() {
-            if (!this.options.themeToggle) return;
-            
-            this.options.themeToggle.addEventListener('click', () => {
-                this.toggleTheme();
-            });
-        },
-        
-        toggleTheme: function() {
-            this.isDarkTheme = !this.isDarkTheme;
-            document.body.classList.toggle('theme-light', !this.isDarkTheme);
-            document.body.classList.toggle('theme-dark', this.isDarkTheme);
-            
-            if (this.options.themeToggle) {
-                this.options.themeToggle.textContent = this.isDarkTheme ? '🌓 THÈME CLAIR' : '🌙 THÈME SOMBRE';
-            }
-        },
-        
-        _setupWindowFocus: function() {
-            const container = this.options.container;
-            container.addEventListener('mousedown', (e) => {
-                const windowEl = e.target.closest('.wobbly-window');
-                if (windowEl) {
-                    this.bringToFront(windowEl);
-                }
-            });
-        },
-        
-        bringToFront: function(windowEl) {
-            this.windows.forEach(w => {
-                w.element.style.zIndex = '1';
-            });
-            
-            const win = this.windows.find(w => w.element === windowEl);
-            if (win) {
-                win.element.style.zIndex = '100';
-                this.activeWindow = win;
-                
-                if (this.options.activePanel) {
-                    this.options.activePanel(win.winIndex || 0);
-                }
-            }
-        },
-        
-        addWindow: function(element, options) {
-            const win = new WobblyWindow(element, options);
-            win.winIndex = this.windows.length;
-            this.windows.push(win);
-            return win;
-        },
-        
-        getWindow: function(index) {
-            return this.windows[index];
-        },
-        
-        setActiveWindow: function(index) {
-            if (this.windows[index]) {
-                this.bringToFront(this.windows[index].element);
-            }
-        },
-        
-        destroy: function() {
-            this.windows.forEach(win => win.destroy());
-            this.windows = [];
-        }
-    };
-
     // ============================================================
-    // EXPORT PUBLIC
+    // EXPORTATION
     // ============================================================
     
     global.UILibrary = {
-        Utils: Utils,
-        DragManager: DragManager,
-        PositionDetector: PositionDetector,
-        AnimationConfig: AnimationConfig,
-        GenieAnimator: GenieAnimator,
-        LampeMagique: LampeMagique,
+        GenieEffect: GenieEffect,
         WobblyWindow: WobblyWindow,
-        WobblyWindowManager: WobblyWindowManager,
-        
-        createLampeMagique: function(container, options) {
-            return new LampeMagique(Utils.extend({ container: container }, options));
-        },
-        
-        createWobblyWindow: function(element, options) {
-            return new WobblyWindow(element, options);
-        },
-        
-        createWobblyWindowManager: function(options) {
-            return new WobblyWindowManager(options);
-        }
+        version: '1.0.0'
     };
-
+    
 })(typeof window !== 'undefined' ? window : this);
