@@ -1,8 +1,7 @@
 /**
- * NinjaUI - Bibliothèque d'effets UX/UI JavaScript
- * Inspirée par "Secrets of the JavaScript Ninja"
+ * UI-Library - Bibliothèque d'effets UX/UI JavaScript
  * Utilisation de prototypes et classes constructeurs
- * 
+ * Lampe magique et windows wobble effects
  * @author Thibaut Lombard
  * @version 1.0.0
  */
