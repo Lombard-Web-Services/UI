@@ -38,7 +38,7 @@
         }
         
         body.light-theme .section-header {
-            color: #1a1a2e;
+            color: #e0e0e0;
         }
         
         .section-header h1 {
@@ -73,7 +73,7 @@
         }
         
         body.light-theme .nav-btn {
-            color: #1a1a2e;
+            color: #e0e0e0;
         }
         
         .nav-btn.active {
@@ -115,6 +115,14 @@
             position: relative;
             width: 100%;
             height: calc(100vh - 100px);
+            min-height: 500px;
+        }
+        
+        .combo-container {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 100px);
+            min-height: 500px;
         }
         
         .wobbly-window {
@@ -122,8 +130,8 @@
         }
         
         .wobbly-window[data-win-id="0"] { left: 60px; top: 60px; }
-        .wobbly-window[data-win-id="1"] { left: 480px; top: 160px; width: 460px; min-height: 380px; }
-        .wobbly-window[data-win-id="2"] { left: 280px; top: 460px; width: 440px; min-height: 340px; }
+        .wobbly-window[data-win-id="1"] { left: 520px; top: 160px; width: 460px; min-height: 380px; }
+        .wobbly-window[data-win-id="2"] { left: 300px; top: 480px; width: 440px; min-height: 340px; }
         
         .combo-window {
             position: absolute;
@@ -133,67 +141,39 @@
             width: 560px;
         }
         
-        .combo-container {
-            position: relative;
-            width: 100%;
-            height: calc(100vh - 100px);
-        }
-        
-        .double-panel {
+        /* Bouton theme global */
+        .global-theme-btn {
             position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.45);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            padding: 20px;
-            width: 320px;
-            z-index: 90;
+            top: 20px;
+            right: 200px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            color: white;
+            cursor: pointer;
+            z-index: 1000;
+            font-weight: 600;
+            font-size: 12px;
         }
         
-        .double-panel h4 {
-            color: #ffbd2e;
-            margin-bottom: 12px;
-            font-size: 14px;
-        }
-        
-        .double-panel .control-group {
-            margin-bottom: 12px;
-        }
-        
-        .double-panel .control-group label {
-            display: flex;
-            justify-content: space-between;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 11px;
-        }
-        
-        .double-panel input {
-            width: 100%;
-        }
-        
-        body.light-theme .double-panel {
-            background: rgba(255, 255, 255, 0.9);
-        }
-        
-        body.light-theme .double-panel h4 {
+        body.light-theme .global-theme-btn {
+            background: rgba(0, 0, 0, 0.2);
             color: #1a1a2e;
-        }
-        
-        body.light-theme .double-panel .control-group label {
-            color: #334155;
         }
     </style>
 </head>
 <body>
+
+<button class="global-theme-btn" id="globalThemeBtn">🌓 Theme Clair/Sombre</button>
 
 <div class="demo-container">
     <!-- Section Lampe Magique -->
     <div id="magicSection" class="demo-section active">
         <div class="section-header">
             <h1>🪔 Lampe Magique</h1>
-            <p>Effet Génie avec déformation directionnelle</p>
+            <p>Effet Genie avec deformation directionnelle</p>
         </div>
         
         <div id="magicWindow" class="window">
@@ -206,37 +186,33 @@
                 <div class="title-text">🪔 Lampe Magique</div>
             </div>
             <div class="content">
-                <h2>🧞 Effet Génie Parfait</h2>
-                <p>La fenêtre émerge <strong>DEPUIS le bord du bouton</strong> sans jamais passer devant !</p>
+                <h2>🧞 Effet Genie Parfait</h2>
+                <p>La fenetre emerge <strong>DEPUIS le bord du bouton</strong> sans jamais passer devant !</p>
                 <ul class="feature-list">
-                    <li>🧭 Directionnel - Sort du bord opposé du bouton</li>
-                    <li>🪞 Déformation symétrique</li>
-                    <li>🖱️ Fenêtre et bouton déplaçables (fluide)</li>
-                    <li>⚡ Paramètres durée et déformation</li>
+                    <li>🧭 Directionnel - Sort du bord oppose du bouton</li>
+                    <li>🪞 Deformation symetrique</li>
+                    <li>🖱️ Fenetre et bouton deplacables (fluide)</li>
+                    <li>⚡ Parametres duree et deformation</li>
                 </ul>
-                <p style="font-size: 12px; opacity: 0.6;">💡 Déplacez le bouton n'importe où, la restauration part du bord opposé !</p>
+                <p style="font-size: 12px; opacity: 0.6;">💡 Deplacez le bouton n'importe ou, la restauration part du bord oppose !</p>
             </div>
         </div>
         
         <div class="potentiometer-panel">
             <div class="potentiometer-group">
-                <span class="potentiometer-label">⏱️ Durée</span>
+                <span class="potentiometer-label">⏱️ Duree</span>
                 <input type="range" class="potentiometer" id="magicDuration" min="300" max="1500" value="700" step="10">
                 <span class="potentiometer-value" id="durationValue">700ms</span>
             </div>
             <div class="potentiometer-group">
-                <span class="potentiometer-label">🌀 Déformation</span>
+                <span class="potentiometer-label">🌀 Deformation</span>
                 <input type="range" class="potentiometer" id="magicSkew" min="20" max="80" value="50" step="1">
                 <span class="potentiometer-value" id="skewValue">50°</span>
             </div>
             <div class="potentiometer-group">
                 <span class="potentiometer-label">✨ Glass</span>
                 <input type="range" class="potentiometer" id="magicGlass" min="0" max="1" value="1" step="1">
-                <span class="potentiometer-value" id="glassValue">Activé</span>
-            </div>
-            <div class="potentiometer-group">
-                <span class="potentiometer-label">🌓 Theme</span>
-                <button id="magicThemeBtn" style="padding: 6px 12px; border-radius: 20px; border: none; background: #ffbd2e; cursor: pointer; font-weight: bold;">Toggle</button>
+                <span class="potentiometer-value" id="glassValue">Active</span>
             </div>
         </div>
     </div>
@@ -245,14 +221,14 @@
     <div id="wobblySection" class="demo-section">
         <div class="section-header">
             <h1>🌀 Wobbly Windows</h1>
-            <p>Effet liquide et élastique style Compiz</p>
+            <p>Effet liquide et elastique style Compiz</p>
         </div>
         
         <div class="wobbly-container" id="wobblyContainer">
             <div class="wobbly-window" data-win-id="0">
                 <div class="window-surface">
                     <div class="window-titlebar" data-drag-handle>
-                        <span class="window-title">🌀 COMPIZ STYLE · Fenêtre Principale</span>
+                        <span class="window-title">🌀 COMPIZ STYLE · Fenetre Principale</span>
                         <div class="window-controls">
                             <button class="window-btn btn-close" data-action="close">✕</button>
                             <button class="window-btn btn-minimize" data-action="minimize">−</button>
@@ -260,9 +236,9 @@
                         </div>
                     </div>
                     <div class="window-content">
-                        <h2>✨ EFFET LIQUIDE / ÉLASTIQUE</h2>
-                        <p>La <strong>fenêtre elle-même</strong> se déforme comme de la gelée !</p>
-                        <div class="wobble-demo">🍮 DÉFORMATION ÉLASTIQUE RÉALISTE 🍮</div>
+                        <h2>✨ EFFET LIQUIDE / ELASTIQUE</h2>
+                        <p>La <strong>fenetre elle-meme</strong> se deforme comme de la gelee !</p>
+                        <div class="wobble-demo">🍮 DEFORMATION ELASTIQUE REALISTE 🍮</div>
                         <p>⚡ Physique: scale + skew + rotation</p>
                     </div>
                 </div>
@@ -270,7 +246,7 @@
             <div class="wobbly-window" data-win-id="1">
                 <div class="window-surface">
                     <div class="window-titlebar" data-drag-handle>
-                        <span class="window-title">📐 Fenêtre Secondaire</span>
+                        <span class="window-title">📐 Fenetre Secondaire</span>
                         <div class="window-controls">
                             <button class="window-btn btn-close" data-action="close">✕</button>
                             <button class="window-btn btn-minimize" data-action="minimize">−</button>
@@ -278,10 +254,10 @@
                         </div>
                     </div>
                     <div class="window-content">
-                        <h2>Déformation physique</h2>
-                        <p>Quand vous tirez, la fenêtre s'étire dans la direction du mouvement.</p>
+                        <h2>Deformation physique</h2>
+                        <p>Quand vous tirez, la fenetre s'etire dans la direction du mouvement.</p>
                         <div style="background: rgba(59,130,246,0.2); border-radius: 14px; padding: 14px; margin-top: 12px;">
-                            🎯 VRAI WOBBLE - retour élastique à la release
+                            🎯 VRAI WOBBLE - retour elastique a la release
                         </div>
                     </div>
                 </div>
@@ -289,7 +265,7 @@
             <div class="wobbly-window" data-win-id="2">
                 <div class="window-surface">
                     <div class="window-titlebar" data-drag-handle>
-                        <span class="window-title">🎨 Troisième Fenêtre</span>
+                        <span class="window-title">🎨 Troisieme Fenetre</span>
                         <div class="window-controls">
                             <button class="window-btn btn-close" data-action="close">✕</button>
                             <button class="window-btn btn-minimize" data-action="minimize">−</button>
@@ -298,8 +274,8 @@
                     </div>
                     <div class="window-content">
                         <h2>Glassmorphism + Wobble</h2>
-                        <p>La déformation affecte tout le contenu de manière cohérente.</p>
-                        <div class="wobble-demo" style="margin-top:12px; padding:12px;">✨ TOUTES LES FENÊTRES SONT DÉPLAÇABLES ✨</div>
+                        <p>La deformation affecte tout le contenu de maniere coherente.</p>
+                        <div class="wobble-demo" style="margin-top:12px; padding:12px;">✨ TOUTES LES FENETRES SONT DEPLAÇABLES ✨</div>
                     </div>
                 </div>
             </div>
@@ -307,14 +283,14 @@
 
         <div class="control-panel">
             <h3>🎛️ COMPIZ WOBBLE PARAMS</h3>
-            <div style="font-size:11px; margin-bottom:12px; text-align:center;">🪟 Fenêtre active: <span id="activeWinName">Fenêtre 1</span></div>
+            <div style="font-size:11px; margin-bottom:12px; text-align:center;">🪟 Fenetre active: <span id="activeWinName">Fenetre 1</span></div>
             
             <div class="control-group">
-                <label>💪 INTENSITÉ WOBBLE <span id="intensityVal" class="value-display">1.2</span></label>
+                <label>💪 INTENSITE WOBBLE <span id="intensityVal" class="value-display">1.2</span></label>
                 <input type="range" id="wobbleIntensity" min="0" max="2.2" step="0.02" value="1.2">
             </div>
             <div class="control-group">
-                <label>🔁 RAPPEL ÉLASTIQUE <span id="springVal" class="value-display">0.14</span></label>
+                <label>🔁 RAPPEL ELASTIQUE <span id="springVal" class="value-display">0.14</span></label>
                 <input type="range" id="springSpeed" min="0.06" max="0.28" step="0.005" value="0.14">
             </div>
             <div class="control-group">
@@ -327,13 +303,12 @@
             </div>
             
             <select id="windowSelector" class="panel-select">
-                <option value="0">🪟 Fenêtre 1 (Principale)</option>
-                <option value="1">🪟 Fenêtre 2 (Secondaire)</option>
-                <option value="2">🪟 Fenêtre 3</option>
+                <option value="0">🪟 Fenetre 1 (Principale)</option>
+                <option value="1">🪟 Fenetre 2 (Secondaire)</option>
+                <option value="2">🪟 Fenetre 3</option>
             </select>
             
-            <button id="wobblyThemeBtn" class="theme-toggle">🌓 THÈME CLAIR</button>
-            <button id="resetParamsBtn" class="reset-btn">⟳ RÉINITIALISER</button>
+            <button id="resetParamsBtn" class="reset-btn">⟳ REINITIALISER</button>
         </div>
     </div>
 
@@ -341,7 +316,7 @@
     <div id="comboSection" class="demo-section">
         <div class="section-header">
             <h1>🔮 Combo Window</h1>
-            <p>Effet Génie + Wobbly combinés</p>
+            <p>Effet Genie + Wobbly combines</p>
         </div>
         
         <div class="combo-container">
@@ -351,17 +326,17 @@
                         <div class="window-buttons">
                             <div class="window-btn close"></div>
                             <div class="window-btn minimize-btn" id="comboMinimizeTrigger"></div>
-                            <div class="window-btn maximize"></div>
+                            <div class="window-btn maximize" id="comboMaximizeTrigger"></div>
                         </div>
                         <div class="title-text">🔮 Combo Window (Genie + Wobbly)</div>
                     </div>
                     <div class="content">
-                        <h2>✨ Effet Génie + Wobbly Combinés</h2>
-                        <p>Cette fenêtre bénéficie à la fois de l'effet de minimisation magique et de la déformation élastique au déplacement.</p>
+                        <h2>✨ Effet Genie + Wobbly Combines</h2>
+                        <p>Cette fenetre beneficie a la fois de l'effet de minimisation magique et de la deformation elastique au deplacement.</p>
                         <ul class="feature-list">
                             <li>🧞 Minimisation/Restauration directionnelle (Genie Effect)</li>
-                            <li>🌀 Déformation élastique au déplacement (Wobbly)</li>
-                            <li>⚡ Paramètres configurables pour les deux effets</li>
+                            <li>🌀 Deformation elastique au deplacement (Wobbly)</li>
+                            <li>⚡ Parametres configurables pour les deux effets</li>
                         </ul>
                     </div>
                 </div>
@@ -371,23 +346,23 @@
         <button id="comboActionBtn" class="control-btn" style="bottom: 120px; right: 40px;">🪔 Minimiser</button>
         
         <div class="double-panel">
-            <h4>🎛️ Paramètres Lampe Magique</h4>
+            <h4>🎛️ Parametres Lampe Magique</h4>
             <div class="control-group">
-                <label>⏱️ Durée <span id="comboDurationVal">700ms</span></label>
+                <label>⏱️ Duree <span id="comboDurationVal">700ms</span></label>
                 <input type="range" id="comboDuration" min="300" max="1500" value="700" step="10">
             </div>
             <div class="control-group">
-                <label>🌀 Déformation Génie <span id="comboSkewVal">50°</span></label>
+                <label>🌀 Deformation Genie <span id="comboSkewVal">50°</span></label>
                 <input type="range" id="comboSkew" min="20" max="80" value="50" step="1">
             </div>
             <div class="control-group">
-                <label>✨ Glass <span id="comboGlassVal">Activé</span></label>
+                <label>✨ Glass <span id="comboGlassVal">Active</span></label>
                 <input type="range" id="comboGlass" min="0" max="1" value="1" step="1">
             </div>
             
-            <h4 style="margin-top: 16px;">🎛️ Paramètres Wobbly</h4>
+            <h4 style="margin-top: 16px;">🎛️ Parametres Wobbly</h4>
             <div class="control-group">
-                <label>💪 Intensité <span id="comboWobIntensityVal">1.2</span></label>
+                <label>💪 Intensite <span id="comboWobIntensityVal">1.2</span></label>
                 <input type="range" id="comboWobIntensity" min="0" max="2.2" step="0.02" value="1.2">
             </div>
             <div class="control-group">
@@ -413,7 +388,7 @@
 </div>
 
 <div class="demo-info">🧭 UI-Library v1.0.0</div>
-<div class="debug-info" id="debugInfo">✅ Prêt</div>
+<div class="debug-info" id="debugInfo">✅ Pret</div>
 
 <script src="UI-Library.js"></script>
 <script>
@@ -436,7 +411,15 @@
         function setTheme(isDarkMode) {
             isDark = isDarkMode;
             document.body.classList.toggle('light-theme', !isDark);
+            var themeBtn = document.getElementById('globalThemeBtn');
+            if (themeBtn) {
+                themeBtn.innerHTML = isDark ? '🌓 Theme Clair' : '🌙 Theme Sombre';
+            }
         }
+        
+        document.getElementById('globalThemeBtn').addEventListener('click', function() {
+            setTheme(!isDark);
+        });
         
         // ============================================================
         // LAMPE MAGIQUE
@@ -464,11 +447,8 @@
         });
         document.getElementById('magicGlass').addEventListener('input', function(e) {
             var val = parseInt(e.target.value) === 1;
-            document.getElementById('glassValue').textContent = val ? 'Activé' : 'Désactivé';
+            document.getElementById('glassValue').textContent = val ? 'Active' : 'Desactive';
             magicGenie.updateOptions({ glassEnabled: val });
-        });
-        document.getElementById('magicThemeBtn').addEventListener('click', function() {
-            setTheme(!isDark);
         });
         
         // ============================================================
@@ -527,7 +507,7 @@
         
         document.getElementById('windowSelector').addEventListener('change', function(e) {
             activeWindowIdx = parseInt(e.target.value);
-            var names = ['Fenêtre 1', 'Fenêtre 2', 'Fenêtre 3'];
+            var names = ['Fenetre 1', 'Fenetre 2', 'Fenetre 3'];
             document.getElementById('activeWinName').innerText = names[activeWindowIdx];
             updateWobblyUI();
             if (wobblyWindows[activeWindowIdx]) wobblyWindows[activeWindowIdx].bringToFront();
@@ -542,10 +522,6 @@
             applyWobblyToActive();
         });
         
-        document.getElementById('wobblyThemeBtn').addEventListener('click', function() {
-            setTheme(!isDark);
-        });
-        
         updateWobblyUI();
         if (wobblyWindows[0]) wobblyWindows[0].bringToFront();
         
@@ -556,6 +532,7 @@
         var comboWindow = document.getElementById('comboWindow');
         var comboBtn = document.getElementById('comboActionBtn');
         var comboMinimizeTrigger = document.getElementById('comboMinimizeTrigger');
+        var comboMaximizeTrigger = document.getElementById('comboMaximizeTrigger');
         
         var combo = new UILibrary.ComboWindow(comboWindow, comboBtn, {
             duration: 700, skewIntensity: 50, glassEnabled: true,
@@ -566,6 +543,13 @@
             comboMinimizeTrigger.addEventListener('click', function(e) {
                 e.stopPropagation();
                 combo.minimize();
+            });
+        }
+        
+        if (comboMaximizeTrigger) {
+            comboMaximizeTrigger.addEventListener('click', function(e) {
+                e.stopPropagation();
+                combo.toggleMaximize();
             });
         }
         
@@ -581,7 +565,7 @@
         });
         document.getElementById('comboGlass').addEventListener('input', function(e) {
             var val = parseInt(e.target.value) === 1;
-            document.getElementById('comboGlassVal').textContent = val ? 'Activé' : 'Désactivé';
+            document.getElementById('comboGlassVal').textContent = val ? 'Active' : 'Desactive';
             combo.updateGenieOptions({ glassEnabled: val });
         });
         
