@@ -3,24 +3,126 @@
    Styles pour les composants UI-Library
    ============================================================ */
 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 /* Variables globales */
 :root {
+    --gradient-start: #0f0c29;
+    --gradient-middle: #1a1a3e;
+    --gradient-end: #0a0a15;
     --glass-bg: rgba(255, 255, 255, 0.08);
     --glass-border: rgba(255, 255, 255, 0.25);
     --title-bar-bg: rgba(255, 255, 255, 0.12);
     --text-color: rgba(255, 255, 255, 0.9);
     --accent-color: #ffbd2e;
-    --accent-gradient: linear-gradient(135deg, #ffd89b, #c7e9fb, #a78bfa);
 }
 
+/* Animation de fond */
+body {
+    min-height: 100vh;
+    background: radial-gradient(circle at 0% 0%, #0f0c29, #1a1a3e, #0a0a15);
+    overflow: hidden;
+    font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(125deg, #ff6b6b 0%, #4ecdc4 25%, #45b7d1 50%, #96ceb4 75%, #ffeead 100%);
+    opacity: 0.15;
+    z-index: -2;
+    animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+    0% { opacity: 0.1; transform: scale(1); }
+    50% { opacity: 0.2; transform: scale(1.05); }
+    100% { opacity: 0.1; transform: scale(1); }
+}
+
+/* Theme Light */
+body.light-theme {
+    background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+}
+
+body.light-theme::before {
+    opacity: 0.05;
+}
+
+body.light-theme .window,
+body.light-theme .window-surface {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 25px 45px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+body.light-theme .title-bar {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+body.light-theme .title-text,
+body.light-theme .window-title {
+    color: #1a1a2e;
+}
+
+body.light-theme .window-content,
+body.light-theme .window-content p {
+    color: #1e293b;
+}
+
+body.light-theme .window-content h2 {
+    color: #0f172a;
+}
+
+body.light-theme .control-panel,
+body.light-theme .potentiometer-panel {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme .control-panel h3,
+body.light-theme .potentiometer-label {
+    color: #1e293b;
+}
+
+body.light-theme .control-group label {
+    color: #334155;
+}
+
+body.light-theme .potentiometer-value {
+    background: rgba(0, 0, 0, 0.1);
+    color: #ffbd2e;
+}
+
+/* No Glass mode */
 body.no-glass .window,
 body.no-glass .control-btn,
-body.no-glass .potentiometer-panel {
+body.no-glass .potentiometer-panel,
+body.no-glass .window-surface,
+body.no-glass .control-panel {
     backdrop-filter: none;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.85);
 }
 
-/* Window Lampe Magique */
+body.no-glass.light-theme .window,
+body.no-glass.light-theme .window-surface,
+body.no-glass.light-theme .control-panel {
+    background: rgba(255, 255, 255, 0.95);
+}
+
+/* ============================================================
+   STYLES LAMPE MAGIQUE
+   ============================================================ */
+
 .window {
     position: absolute;
     width: 580px;
@@ -48,19 +150,10 @@ body.no-glass .potentiometer-panel {
     user-select: none;
 }
 
-.title-bar:active {
-    cursor: grabbing;
-}
+.title-bar:active { cursor: grabbing; }
+.title-bar:hover { background: rgba(255, 255, 255, 0.18); }
 
-.title-bar:hover {
-    background: rgba(255, 255, 255, 0.18);
-}
-
-.window-buttons {
-    display: flex;
-    gap: 10px;
-}
-
+.window-buttons { display: flex; gap: 10px; }
 .window-btn {
     width: 14px;
     height: 14px;
@@ -69,22 +162,10 @@ body.no-glass .potentiometer-panel {
     cursor: pointer;
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
-
-.window-btn:hover {
-    transform: scale(1.2);
-}
-
-.window-btn.close {
-    background: #ff5f56;
-}
-
-.window-btn.minimize-btn {
-    background: #ffbd2e;
-}
-
-.window-btn.maximize {
-    background: #27c93f;
-}
+.window-btn:hover { transform: scale(1.2); }
+.close { background: #ff5f56; }
+.minimize-btn { background: #ffbd2e; }
+.maximize { background: #27c93f; }
 
 .title-text {
     color: rgba(255, 255, 255, 0.95);
@@ -93,39 +174,35 @@ body.no-glass .potentiometer-panel {
     margin-left: 8px;
 }
 
-.window .content {
+.content {
     padding: 32px 32px 40px;
     color: var(--text-color);
 }
-
-.window .content h2 {
+.content h2 {
     margin-bottom: 16px;
     font-size: 32px;
-    background: var(--accent-gradient);
+    background: linear-gradient(135deg, #ffd89b, #c7e9fb, #a78bfa);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
 }
-
-.window .feature-list {
+.feature-list {
     list-style: none;
     margin: 24px 0;
 }
-
-.window .feature-list li {
+.feature-list li {
     padding: 10px 0 10px 34px;
     position: relative;
 }
-
-.window .feature-list li::before {
+.feature-list li::before {
     content: "🧞";
     position: absolute;
     left: 0;
     top: 8px;
 }
 
-/* Control button styles */
-.ui-control-btn {
+/* Control Button */
+.control-btn {
     position: fixed;
     bottom: 40px;
     right: 40px;
@@ -143,26 +220,22 @@ body.no-glass .potentiometer-panel {
     user-select: none;
     transition: all 0.3s;
 }
-
-.ui-control-btn:hover {
+.control-btn:hover {
     transform: translateY(-3px);
     background: rgba(255, 189, 46, 0.35);
 }
-
-.ui-control-btn.dragging,
-.ui-control-btn:active {
+.control-btn.dragging {
     cursor: grabbing;
     transform: scale(1.02);
     transition: none;
 }
-
-.ui-control-btn.restore-mode {
+.control-btn.restore-mode {
     background: rgba(102, 126, 234, 0.25);
     color: #a78bfa;
     border-color: rgba(102, 126, 234, 0.5);
 }
 
-/* Potentiometer panel */
+/* Potentiometer Panel */
 .potentiometer-panel {
     position: fixed;
     bottom: 30px;
@@ -176,21 +249,18 @@ body.no-glass .potentiometer-panel {
     gap: 28px;
     z-index: 90;
 }
-
 .potentiometer-group {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 10px;
 }
-
 .potentiometer-label {
     color: rgba(255, 255, 255, 0.7);
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 2px;
 }
-
 .potentiometer {
     width: 130px;
     height: 5px;
@@ -198,7 +268,6 @@ body.no-glass .potentiometer-panel {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 10px;
 }
-
 .potentiometer::-webkit-slider-thumb {
     width: 18px;
     height: 18px;
@@ -207,7 +276,6 @@ body.no-glass .potentiometer-panel {
     border: 2px solid rgba(255, 255, 255, 0.4);
     cursor: grab;
 }
-
 .potentiometer-value {
     color: #ffbd2e;
     font-family: monospace;
@@ -217,7 +285,17 @@ body.no-glass .potentiometer-panel {
     border-radius: 20px;
 }
 
-/* Wobbly Window styles */
+/* ============================================================
+   STYLES WOBBLY WINDOWS
+   ============================================================ */
+
+.windows-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: visible;
+}
+
 .wobbly-window {
     position: absolute;
     width: 480px;
@@ -242,25 +320,6 @@ body.no-glass .potentiometer-panel {
     border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-body.light-theme .window-surface {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(12px);
-    box-shadow: 0 25px 45px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-}
-
-body.light-theme .window-surface .window-titlebar {
-    background: rgba(255, 255, 255, 0.4);
-}
-
-body.light-theme .window-surface .window-content {
-    color: #1e293b;
-}
-
-body.light-theme .window-surface .window-content h2 {
-    color: #0f172a;
-}
-
 .window-titlebar {
     padding: 16px 20px;
     display: flex;
@@ -273,9 +332,7 @@ body.light-theme .window-surface .window-content h2 {
     border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
-.window-titlebar:active {
-    cursor: grabbing;
-}
+.window-titlebar:active { cursor: grabbing; }
 
 .window-title {
     font-weight: 600;
@@ -299,35 +356,21 @@ body.light-theme .window-surface .window-content h2 {
     cursor: pointer;
     transition: transform 0.15s;
 }
-
-.window-btn:hover {
-    transform: scale(1.2);
-}
-
-.btn-close {
-    background: #ff5f56;
-}
-
-.btn-minimize {
-    background: #ffbd2e;
-}
-
-.btn-maximize {
-    background: #27c93f;
-}
+.window-btn:hover { transform: scale(1.2); }
+.btn-close { background: #ff5f56; }
+.btn-minimize { background: #ffbd2e; }
+.btn-maximize { background: #27c93f; }
 
 .window-content {
     padding: 24px;
     flex: 1;
     color: #cbd5e6;
 }
-
 .window-content h2 {
     margin-bottom: 12px;
     font-size: 20px;
     color: white;
 }
-
 .window-content p {
     margin-bottom: 12px;
     font-size: 14px;
@@ -345,33 +388,110 @@ body.light-theme .window-surface .window-content h2 {
     transition: transform 0.1s;
 }
 
-/* Dragging state */
+/* Control Panel Wobbly */
+.control-panel {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(10, 15, 30, 0.95);
+    backdrop-filter: blur(16px);
+    border-radius: 24px;
+    padding: 20px;
+    width: 290px;
+    z-index: 2000;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+.control-panel h3 {
+    color: white;
+    font-size: 14px;
+    margin-bottom: 16px;
+    text-align: center;
+}
+.control-group {
+    margin-bottom: 14px;
+}
+.control-group label {
+    display: flex;
+    justify-content: space-between;
+    color: #cbd5e6;
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+.control-group input[type="range"] {
+    width: 100%;
+    cursor: pointer;
+    background: #334155;
+    height: 4px;
+    border-radius: 4px;
+    -webkit-appearance: none;
+}
+.control-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #3b82f6;
+    cursor: pointer;
+}
+.value-display {
+    color: #3b82f6;
+    font-weight: bold;
+}
+.panel-select {
+    width: 100%;
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-top: 8px;
+}
+.theme-toggle {
+    width: 100%;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+}
+.reset-btn {
+    width: 100%;
+    background: #3b82f6;
+    border: none;
+    padding: 8px;
+    border-radius: 20px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: all 0.2s;
+}
+.reset-btn:hover {
+    background: #2563eb;
+    transform: scale(0.98);
+}
+
+/* États */
+.wobbly-window.focused {
+    z-index: 100;
+}
 .dragging-active {
     cursor: grabbing !important;
     z-index: 200 !important;
 }
 
-.wobbly-window.focused {
-    z-index: 100;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
-    .window {
-        width: 90%;
-    }
-    
-    .potentiometer-panel {
-        flex-direction: column;
-        gap: 16px;
-    }
-    
-    .potentiometer {
-        width: 100%;
-    }
-    
-    .ui-control-btn {
-        padding: 10px 20px;
-        font-size: 12px;
-    }
+    .window { width: 90%; }
+    .potentiometer-panel { flex-direction: column; gap: 16px; bottom: auto; top: 20px; left: 20px; }
+    .potentiometer { width: 100%; }
+    .control-btn { padding: 10px 20px; font-size: 12px; }
+    .control-panel { width: 260px; padding: 16px; }
 }
