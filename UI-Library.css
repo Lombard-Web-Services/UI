@@ -9,18 +9,6 @@
     box-sizing: border-box;
 }
 
-/* Variables globales */
-:root {
-    --gradient-start: #0f0c29;
-    --gradient-middle: #1a1a3e;
-    --gradient-end: #0a0a15;
-    --glass-bg: rgba(255, 255, 255, 0.08);
-    --glass-border: rgba(255, 255, 255, 0.25);
-    --title-bar-bg: rgba(255, 255, 255, 0.12);
-    --text-color: rgba(255, 255, 255, 0.9);
-    --accent-color: #ffbd2e;
-}
-
 /* Animation de fond */
 body {
     min-height: 100vh;
@@ -59,13 +47,15 @@ body.light-theme::before {
 }
 
 body.light-theme .window,
-body.light-theme .window-surface {
+body.light-theme .window-surface,
+body.light-theme .combo-window .window-surface {
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(12px);
     box-shadow: 0 25px 45px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.6);
 }
 
-body.light-theme .title-bar {
+body.light-theme .title-bar,
+body.light-theme .window-titlebar {
     background: rgba(0, 0, 0, 0.08);
 }
 
@@ -108,7 +98,8 @@ body.no-glass .window,
 body.no-glass .control-btn,
 body.no-glass .potentiometer-panel,
 body.no-glass .window-surface,
-body.no-glass .control-panel {
+body.no-glass .control-panel,
+body.no-glass .combo-window .window-surface {
     backdrop-filter: none;
     background: rgba(0, 0, 0, 0.85);
 }
@@ -126,10 +117,10 @@ body.no-glass.light-theme .control-panel {
 .window {
     position: absolute;
     width: 580px;
-    background: var(--glass-bg);
+    background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(20px) saturate(180%);
     border-radius: 28px;
-    border: 1px solid var(--glass-border);
+    border: 1px solid rgba(255, 255, 255, 0.25);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
     overflow: hidden;
     will-change: transform, clip-path, opacity;
@@ -138,7 +129,7 @@ body.no-glass.light-theme .control-panel {
 
 .title-bar {
     height: 56px;
-    background: var(--title-bar-bg);
+    background: rgba(255, 255, 255, 0.12);
     backdrop-filter: blur(10px);
     border-radius: 28px 28px 0 0;
     display: flex;
@@ -176,7 +167,7 @@ body.no-glass.light-theme .control-panel {
 
 .content {
     padding: 32px 32px 40px;
-    color: var(--text-color);
+    color: rgba(255, 255, 255, 0.9);
 }
 .content h2 {
     margin-bottom: 16px;
@@ -348,19 +339,6 @@ body.no-glass.light-theme .control-panel {
     gap: 10px;
 }
 
-.window-btn {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    border: none;
-    cursor: pointer;
-    transition: transform 0.15s;
-}
-.window-btn:hover { transform: scale(1.2); }
-.btn-close { background: #ff5f56; }
-.btn-minimize { background: #ffbd2e; }
-.btn-maximize { background: #27c93f; }
-
 .window-content {
     padding: 24px;
     flex: 1;
@@ -479,7 +457,8 @@ body.no-glass.light-theme .control-panel {
 }
 
 /* États */
-.wobbly-window.focused {
+.wobbly-window.focused,
+.combo-window.focused {
     z-index: 100;
 }
 .dragging-active {
@@ -487,9 +466,37 @@ body.no-glass.light-theme .control-panel {
     z-index: 200 !important;
 }
 
+/* ============================================================
+   STYLES COMBO WINDOW
+   ============================================================ */
+
+.combo-window {
+    position: absolute;
+    width: 560px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px) saturate(180%);
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    will-change: transform, clip-path, opacity, left, top;
+    z-index: 10;
+}
+
+.combo-window .window-surface {
+    background: transparent;
+    backdrop-filter: none;
+    box-shadow: none;
+}
+
+.combo-window .title-bar {
+    cursor: grab;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .window { width: 90%; }
+    .combo-window { width: 90%; }
     .potentiometer-panel { flex-direction: column; gap: 16px; bottom: auto; top: 20px; left: 20px; }
     .potentiometer { width: 100%; }
     .control-btn { padding: 10px 20px; font-size: 12px; }
