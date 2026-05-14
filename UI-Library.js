@@ -1,7 +1,7 @@
 // ============================================================
 // UI-Library.js
 // Bibliothèque d'effets UI/UX par Thibaut Lombard
-// Modules: Lampe Magique (GenieEffect) & Wobbly Windows (CompizStyle)
+// Modules: Lampe Magique (GenieEffect) & Wobbly Windows (CompizStyle) & Combo
 // ============================================================
 
 (function(global) {
@@ -31,21 +31,13 @@
             this.element.addEventListener('mousedown', function(e) { self._onMouseDown(e); });
             document.addEventListener('mousemove', function(e) { self._onMouseMove(e); });
             document.addEventListener('mouseup', function(e) { self._onMouseUp(e); });
-            this.element.addEventListener('touchstart', function(e) { self._onTouchStart(e); }, { passive: false });
-            document.addEventListener('touchmove', function(e) { self._onTouchMove(e); }, { passive: false });
-            document.addEventListener('touchend', function(e) { self._onTouchEnd(e); });
         },
         
         _onMouseDown: function(e) {
             if (!this.enabled) return;
+            if (e.target.closest('.window-btn')) return;
             e.preventDefault();
             this._startDrag(e.clientX, e.clientY);
-        },
-        
-        _onTouchStart: function(e) {
-            if (!this.enabled || e.touches.length !== 1) return;
-            e.preventDefault();
-            this._startDrag(e.touches[0].clientX, e.touches[0].clientY);
         },
         
         _startDrag: function(clientX, clientY) {
@@ -68,12 +60,6 @@
             this._drag(e.clientX, e.clientY);
         },
         
-        _onTouchMove: function(e) {
-            if (!this._isDragging || e.touches.length !== 1) return;
-            e.preventDefault();
-            this._drag(e.touches[0].clientX, e.touches[0].clientY);
-        },
-        
         _drag: function(clientX, clientY) {
             var newLeft = clientX - this._offsetX;
             var newTop = clientY - this._offsetY;
@@ -85,7 +71,6 @@
         },
         
         _onMouseUp: function() { this._stopDrag(); },
-        _onTouchEnd: function() { this._stopDrag(); },
         
         _stopDrag: function() {
             if (this._isDragging) {
@@ -518,6 +503,7 @@
         
         destroy: function() {
             this._cleanAnimation();
+            if (this.button && this.button.parentNode) this.button.parentNode.removeChild(this.button);
         }
     };
 
@@ -589,6 +575,15 @@
             
             this._bindButtons();
             this._startAnimation();
+            this._saveNormalBounds();
+        },
+        
+        _saveNormalBounds: function() {
+            var rect = this.element.getBoundingClientRect();
+            this.normalLeft = rect.left;
+            this.normalTop = rect.top;
+            this.normalWidth = this.element.offsetWidth;
+            this.normalHeight = this.element.offsetHeight;
         },
         
         _bindButtons: function() {
@@ -633,10 +628,10 @@
         },
         
         toggleMaximize: function() {
-            var self = this;
             if (!this.isMaximized) {
-                this.normalLeft = parseFloat(this.element.style.left);
-                this.normalTop = parseFloat(this.element.style.top);
+                var rect = this.element.getBoundingClientRect();
+                this.normalLeft = rect.left;
+                this.normalTop = rect.top;
                 this.normalWidth = this.element.offsetWidth;
                 this.normalHeight = this.element.offsetHeight;
                 
@@ -644,27 +639,23 @@
                 this.element.style.top = '0';
                 this.element.style.width = '100%';
                 this.element.style.height = '100vh';
-                this.element.style.borderRadius = '0';
                 var surface = this.element.querySelector('.window-surface');
                 if (surface) surface.style.borderRadius = '0';
+                this.element.style.borderRadius = '0';
                 this.isMaximized = true;
-                
-                var rect = this.element.getBoundingClientRect();
-                this.windowLeft = rect.left;
-                this.windowTop = rect.top;
+                this.windowLeft = 0;
+                this.windowTop = 0;
             } else {
                 this.element.style.left = this.normalLeft + 'px';
                 this.element.style.top = this.normalTop + 'px';
                 this.element.style.width = this.normalWidth + 'px';
                 this.element.style.height = this.normalHeight + 'px';
-                this.element.style.borderRadius = '24px';
                 var surface = this.element.querySelector('.window-surface');
                 if (surface) surface.style.borderRadius = '24px';
+                this.element.style.borderRadius = '24px';
                 this.isMaximized = false;
-                
-                var rect = this.element.getBoundingClientRect();
-                this.windowLeft = rect.left;
-                this.windowTop = rect.top;
+                this.windowLeft = this.normalLeft;
+                this.windowTop = this.normalTop;
             }
             
             this.skewVelX += (Math.random() - 0.5) * 2;
@@ -709,8 +700,13 @@
             this.lastMouseX = e.clientX;
             this.lastMouseY = e.clientY;
             
-            this.element.style.left = (this.windowLeft + dx) + 'px';
-            this.element.style.top = (this.windowTop + dy) + 'px';
+            var newLeft = this.windowLeft + dx;
+            var newTop = this.windowTop + dy;
+            newLeft = Math.max(5, Math.min(newLeft, window.innerWidth - this.element.offsetWidth - 5));
+            newTop = Math.max(5, Math.min(newTop, window.innerHeight - this.element.offsetHeight - 5));
+            
+            this.element.style.left = newLeft + 'px';
+            this.element.style.top = newTop + 'px';
             
             var intensity = this.options.intensity;
             var force = this.options.dragForce;
@@ -753,6 +749,10 @@
             this.scaleVelX += (Math.random() - 0.5) * 0.05;
             this.scaleVelY += (Math.random() - 0.5) * 0.05;
             this.rotateVel += (Math.random() - 0.5) * 1.2;
+            
+            var rect = this.element.getBoundingClientRect();
+            this.windowLeft = rect.left;
+            this.windowTop = rect.top;
         },
         
         _updatePhysics: function() {
