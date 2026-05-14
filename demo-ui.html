@@ -345,41 +345,40 @@
             <button id="resetParamsBtn" class="reset-btn">⟳ REINITIALISER</button>
         </div>
     </div>
-
-    <!-- Section Combo (Genie + Wobbly) -->
-    <div id="comboSection" class="demo-section">
-        <div class="section-header">
-            <h1>🔮 Combo Window</h1>
-            <p>Effet Genie + Wobbly combines</p>
-        </div>
-        
-        <div class="combo-container">
-            <div id="comboWindow" class="combo-window">
-                <div class="window-surface">
-                    <div class="title-bar">
-                        <div class="window-buttons">
-                            <div class="window-btn close"></div>
-                            <div class="window-btn minimize-btn" id="comboMinimizeTrigger"></div>
-                            <div class="window-btn maximize" id="comboMaximizeTrigger"></div>
-                        </div>
-                        <div class="title-text">🔮 Combo Window (Genie + Wobbly)</div>
-                    </div>
-                    <div class="content">
-                        <h2>✨ Effet Genie + Wobbly Combines</h2>
-                        <p>Cette fenetre beneficie a la fois de l'effet de minimisation magique et de la deformation elastique au deplacement.</p>
-                        <ul class="feature-list">
-                            <li>🧞 Minimisation/Restauration directionnelle (Genie Effect)</li>
-                            <li>🌀 Deformation elastique au deplacement (Wobbly)</li>
-                            <li>⚡ Parametres configurables pour les deux effets</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <button id="comboActionBtn" class="control-btn" style="bottom: 120px; right: 40px;">🪔 Minimiser</button>
-        
-        <div class="double-panel">
+	<!-- Section Combo (Genie + Wobbly) -->
+	<div id="comboSection" class="demo-section">
+		<div class="section-header">
+			<h1>🔮 Combo Window</h1>
+			<p>Effet Genie + Wobbly combines</p>
+		</div>
+		
+		<div class="combo-container">
+			<div id="comboWindow" class="combo-window">
+				<div class="window-surface">
+					<div class="title-bar" data-drag-handle>
+						<div class="window-buttons">
+							<div class="window-btn close"></div>
+							<div class="window-btn minimize-btn" id="comboMinimizeTrigger"></div>
+							<div class="window-btn maximize" id="comboMaximizeTrigger"></div>
+						</div>
+						<div class="title-text">🔮 Combo Window (Genie + Wobbly)</div>
+					</div>
+					<div class="content">
+						<h2>✨ Effet Genie + Wobbly Combines</h2>
+						<p>Cette fenetre beneficie a la fois de l'effet de minimisation magique et de la deformation elastique au deplacement.</p>
+						<ul class="feature-list">
+							<li>🧞 Minimisation/Restauration directionnelle (Genie Effect)</li>
+							<li>🌀 Deformation elastique au deplacement (Wobbly)</li>
+							<li>⚡ Parametres configurables pour les deux effets</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<button id="comboActionBtn" class="control-btn" style="bottom: 120px; right: 40px;">🪔 Minimiser</button>
+		
+		<div class="double-panel">
             <h4>🎛️ Parametres Lampe Magique</h4>
             <div class="control-group">
                 <label>⏱️ Duree <span id="comboDurationVal">700ms</span></label>
