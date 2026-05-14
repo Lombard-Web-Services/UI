@@ -840,7 +840,7 @@
     // ============================================================
     // MODULE 3: COMBO WINDOW (Genie + Wobbly) - Version corrigée
     // ============================================================
-    
+        
     function ComboWindow(element, button, options) {
         this.element = element;
         this.button = button;
@@ -870,6 +870,16 @@
     
     ComboWindow.prototype = {
         constructor: ComboWindow,
+        
+        _updateGlass: function() {
+            if (this.genieOptions.glassEnabled) {
+                this.element.style.backdropFilter = 'blur(20px)';
+                this.element.style.background = 'rgba(0, 0, 0, 0.6)';
+            } else {
+                this.element.style.backdropFilter = 'none';
+                this.element.style.background = 'rgba(0, 0, 0, 0.85)';
+            }
+        },
         
         _initPosition: function() {
             var left = (window.innerWidth - this.element.offsetWidth) / 2;
@@ -916,6 +926,9 @@
             
             this.genie = new GenieEffect(this.element, this.button, this.genieOptions);
             this.wobbly = new WobblyWindow(this.element, this.wobblyOptions);
+            
+            // Appliquer le glassmorphism initial
+            this._updateGlass();
             
             // Nettoyer le transform CSS initial
             this.element.style.transform = '';
@@ -1003,6 +1016,10 @@
         
         updateGenieOptions: function(options) {
             if (this.genie) this.genie.updateOptions(options);
+            if (options.glassEnabled !== undefined) {
+                this.genieOptions.glassEnabled = options.glassEnabled;
+                this._updateGlass();
+            }
         },
         
         updateWobblyOptions: function(options) {
