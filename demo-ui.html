@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Compiz Wobbly + Genie Combo Window - Ultra Fluide</title>
+    <title>Combo Window - Lampe Magique + Wobbly Physique</title>
     <style>
         * {
             margin: 0;
@@ -17,9 +17,6 @@
             min-height: 100vh;
             overflow: hidden;
             transition: background 0.3s ease;
-        }
-
-        body.theme-dark {
             background: radial-gradient(circle at 20% 30%, #0a0f1e, #0b1120, #030712);
         }
 
@@ -34,9 +31,12 @@
             overflow: visible;
         }
 
-        /* ===== STYLE DE BASE POUR TOUTES LES FENÊTRES WOBBLY ===== */
+        /* ========== WOBBLY WINDOW - STYLE COMPIZ ========== */
         .wobbly-window {
             position: absolute;
+            width: 500px;
+            min-height: 420px;
+            border-radius: 24px;
             cursor: default;
             transition: z-index 0s;
             will-change: transform, left, top;
@@ -52,13 +52,7 @@
             transition: box-shadow 0.2s;
         }
 
-        body.theme-light .window-surface {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-        }
-
+        /* Glassmorphism - Dark */
         body.theme-dark .window-surface {
             background: rgba(18, 22, 35, 0.92);
             backdrop-filter: blur(12px);
@@ -66,6 +60,15 @@
             border: 1px solid rgba(255, 255, 255, 0.15);
         }
 
+        /* Glassmorphism - Light */
+        body.theme-light .window-surface {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        /* Barre de titre - DRAG HANDLE */
         .window-titlebar {
             padding: 16px 20px;
             display: flex;
@@ -73,6 +76,7 @@
             justify-content: space-between;
             cursor: grab;
             border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            transition: background 0.2s;
         }
 
         body.theme-light .window-titlebar {
@@ -99,9 +103,14 @@
         body.theme-light .window-title { color: #1a1a2e; }
         body.theme-dark .window-title { color: #f0f3fa; }
 
-        .window-controls { display: flex; gap: 10px; }
+        .window-controls {
+            display: flex;
+            gap: 10px;
+        }
+
         .window-btn {
-            width: 14px; height: 14px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
             border: none;
             cursor: pointer;
@@ -127,53 +136,82 @@
         body.theme-light .window-content h2 { color: #0f172a; }
         body.theme-dark .window-content h2 { color: white; }
 
-        .window-content p { margin-bottom: 12px; font-size: 14px; line-height: 1.5; }
-
-        .wobble-demo {
-            background: linear-gradient(135deg, #3b82f6, #a855f7);
-            padding: 16px;
-            border-radius: 16px;
-            text-align: center;
-            font-weight: bold;
-            margin: 16px 0;
-            color: white;
+        .window-content p {
+            margin-bottom: 12px;
+            font-size: 14px;
+            line-height: 1.5;
         }
 
-        /* ===== STYLE SPÉCIFIQUE COMBO WINDOW ===== */
-        .combo-window {
-            width: 600px;
-            min-height: 480px;
+        /* ========== LAMPE MAGIQUE - Styles ========== */
+        .genie-lamp-container {
+            position: relative;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
         }
 
-        /* Effet lampe magique - calques superposés */
-        .combo-window .magic-layers {
+        .genie-lamp {
+            width: 120px;
+            height: 120px;
+            cursor: pointer;
+            filter: drop-shadow(0 0 20px rgba(255, 200, 50, 0.5));
+            transition: filter 0.3s ease;
+        }
+
+        .genie-lamp:hover {
+            filter: drop-shadow(0 0 35px rgba(255, 200, 50, 0.8));
+        }
+
+        .genie-lamp-body {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #fbbf24, #d97706);
+            border-radius: 50% 50% 45% 45%;
+            margin: 0 auto;
+            position: relative;
+            box-shadow: inset -5px -5px 15px rgba(0,0,0,0.2), inset 5px 5px 15px rgba(255,255,255,0.3);
+        }
+
+        .genie-lamp-top {
+            width: 40px;
+            height: 25px;
+            background: linear-gradient(135deg, #f59e0b, #b45309);
+            border-radius: 40% 40% 30% 30%;
+            margin: -10px auto 0;
+            position: relative;
+        }
+
+        .genie-lamp-handle {
+            width: 20px;
+            height: 30px;
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+            border-radius: 10px;
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 5;
-            border-radius: 24px;
-            overflow: hidden;
+            right: -15px;
+            top: 20px;
+            transform: rotate(15deg);
         }
 
-        .combo-window .magic-layer {
+        .genie-sparkle {
             position: absolute;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(59,130,246,0.15) 0%, rgba(139,92,246,0.05) 50%, transparent 80%);
+            width: 4px;
+            height: 4px;
+            background: #fbbf24;
+            border-radius: 50%;
             opacity: 0;
-            transition: opacity 0.1s linear;
-            pointer-events: none;
-            border-radius: 24px;
         }
 
-        .combo-window .magic-layer.active {
-            opacity: 1;
+        /* Animation de la lampe */
+        @keyframes lampGlow {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(255, 200, 50, 0.5)); }
+            50% { filter: drop-shadow(0 0 40px rgba(255, 200, 50, 0.9)); }
         }
 
-        /* ===== PANEL DE CONTRÔLE ===== */
+        .lamp-glowing {
+            animation: lampGlow 0.5s ease-in-out;
+        }
+
+        /* ========== PANEL DE CONTRÔLE ========== */
         .control-panel {
             position: fixed;
             bottom: 20px;
@@ -201,7 +239,9 @@
         }
         body.theme-light .control-panel h3 { color: #1e293b; }
 
-        .control-group { margin-bottom: 14px; }
+        .control-group {
+            margin-bottom: 14px;
+        }
         .control-group label {
             display: flex;
             justify-content: space-between;
@@ -227,7 +267,10 @@
             background: #3b82f6;
             cursor: pointer;
         }
-        .value-display { color: #3b82f6; font-weight: bold; }
+        .value-display {
+            color: #3b82f6;
+            font-weight: bold;
+        }
 
         .panel-select, .theme-toggle {
             width: 100%;
@@ -263,7 +306,10 @@
             margin-top: 12px;
             transition: all 0.2s;
         }
-        .reset-btn:hover { background: #2563eb; transform: scale(0.98); }
+        .reset-btn:hover {
+            background: #2563eb;
+            transform: scale(0.98);
+        }
 
         .instructions {
             position: fixed;
@@ -279,18 +325,23 @@
             z-index: 1000;
         }
 
-        .wobbly-window.focused { z-index: 100; }
-        .dragging-active { cursor: grabbing !important; z-index: 200 !important; }
+        .wobbly-window.focused {
+            z-index: 100;
+        }
+        .dragging-active {
+            cursor: grabbing !important;
+            z-index: 200 !important;
+        }
     </style>
 </head>
 <body class="theme-dark">
 
 <div class="windows-container">
-    <!-- FENÊTRE 1 - WOBBLY CLASSIQUE -->
-    <div class="wobbly-window" data-win-id="0" style="left: 40px; top: 50px; width: 460px; min-height: 400px;">
+    <!-- FENÊTRE 1 - COMBO (Lampe Magique + Wobbly) -->
+    <div class="wobbly-window" data-win-id="0" style="left: 60px; top: 60px;">
         <div class="window-surface">
             <div class="window-titlebar" data-drag-handle>
-                <span class="window-title">🌀 Wobbly Window · Classique</span>
+                <span class="window-title">🪔 COMBO · Lampe Magique + Wobbly</span>
                 <div class="window-controls">
                     <button class="window-btn btn-close" data-action="close">✕</button>
                     <button class="window-btn btn-minimize" data-action="minimize">−</button>
@@ -298,18 +349,26 @@
                 </div>
             </div>
             <div class="window-content">
-                <h2>✨ Effet élastique pur</h2>
-                <p>Tirez la barre de titre → la fenêtre se déforme comme de la gelée !</p>
-                <div class="wobble-demo">
-                    🍮 WOBBLE ACTIF 🍮
+                <h2>✨ Lampe Magique + Wobbly Physique</h2>
+                <p>Cliquez sur la lampe → effets magiques !<br>Glissez la barre de titre → la fenêtre wobble comme Compiz !</p>
+                
+                <!-- Lampe Magique -->
+                <div class="genie-lamp-container">
+                    <div class="genie-lamp" id="magicLamp">
+                        <div class="genie-lamp-top"></div>
+                        <div class="genie-lamp-body"></div>
+                        <div class="genie-lamp-handle"></div>
+                    </div>
                 </div>
-                <p>⚡ Physique: scale + skew + rotation<br>💧 Paramètres ajustables</p>
+                <div id="lampMessage" style="text-align: center; font-size: 13px; margin-top: 8px; font-style: italic;">
+                    🧞 Cliquez sur la lampe pour un vœu !
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- FENÊTRE 2 - WOBBLY CLASSIQUE -->
-    <div class="wobbly-window" data-win-id="1" style="left: 480px; top: 120px; width: 440px; min-height: 360px;">
+    <!-- FENÊTRE 2 -->
+    <div class="wobbly-window" data-win-id="1" style="left: 520px; top: 150px; width: 460px; min-height: 380px;">
         <div class="window-surface">
             <div class="window-titlebar" data-drag-handle>
                 <span class="window-title">📐 Fenêtre Secondaire</span>
@@ -320,27 +379,20 @@
                 </div>
             </div>
             <div class="window-content">
-                <h2>Déformation fluide</h2>
-                <p>Drag & drop ultra-rapide sans ralentissement.</p>
+                <h2>Déformation physique</h2>
+                <p>Quand vous tirez, la fenêtre s'étire dans la direction du mouvement. Les bords opposés ondulent.</p>
                 <div style="background: rgba(59,130,246,0.2); border-radius: 14px; padding: 14px; margin-top: 12px;">
-                    🎯 Wobble temps réel
+                    🎯 VRAI WOBBLE - retour élastique à la release
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- FENÊTRE 3 - COMBO WINDOW (LAMPE MAGIQUE + WOBBLY) -->
-    <div class="wobbly-window combo-window" data-win-id="2" style="left: 300px; top: 400px; width: 560px; min-height: 480px;">
+    <!-- FENÊTRE 3 -->
+    <div class="wobbly-window" data-win-id="2" style="left: 300px; top: 470px; width: 440px; min-height: 340px;">
         <div class="window-surface">
-            <!-- Calques magiques (effet lampe) -->
-            <div class="magic-layers">
-                <div class="magic-layer" id="magicLayer1"></div>
-                <div class="magic-layer" id="magicLayer2"></div>
-                <div class="magic-layer" id="magicLayer3"></div>
-            </div>
-            
             <div class="window-titlebar" data-drag-handle>
-                <span class="window-title">🔮 COMBO WINDOW · Lampe Magique + Wobbly</span>
+                <span class="window-title">🎨 Troisième Fenêtre</span>
                 <div class="window-controls">
                     <button class="window-btn btn-close" data-action="close">✕</button>
                     <button class="window-btn btn-minimize" data-action="minimize">−</button>
@@ -348,14 +400,12 @@
                 </div>
             </div>
             <div class="window-content">
-                <h2>✨ Magic Genie + Wobbly Effect ✨</h2>
-                <p>Déplacez cette fenêtre → elle wobble ET produit un effet de lumière magique !</p>
-                <div class="wobble-demo">
-                    🧞‍♂️ LAMPE MAGIQUE ACTIVE 🧞‍♂️<br>
-                    <span style="font-size:12px">Le wobble déclenche des particules lumineuses</span>
+                <h2>Glassmorphism + Wobble</h2>
+                <p>La déformation affecte tout le contenu de manière cohérente.</p>
+                <p>Cliquez sur n'importe quelle fenêtre pour la mettre au premier plan.</p>
+                <div style="background: linear-gradient(135deg, #3b82f6, #a855f7); border-radius: 14px; padding: 14px; margin-top: 12px; text-align: center; color: white;">
+                    ✨ TOUTES LES FENÊTRES SONT DÉPLAÇABLES ✨
                 </div>
-                <p>⚡ Drag & drop ultra-fluide (pas de ralentissement)<br>💧 Effet "genie" qui suit le mouvement</p>
-                <p><strong>Test :</strong> Déplacez rapidement la fenêtre pour voir l'effet magique !</p>
             </div>
         </div>
     </div>
@@ -369,29 +419,29 @@
     </div>
     
     <div class="control-group">
-        <label>💪 INTENSITÉ WOBBLE <span id="intensityVal" class="value-display">1.0</span></label>
-        <input type="range" id="wobbleIntensity" min="0" max="2.0" step="0.02" value="1.0">
+        <label>💪 INTENSITÉ WOBBLE <span id="intensityVal" class="value-display">1.2</span></label>
+        <input type="range" id="wobbleIntensity" min="0.5" max="2.2" step="0.02" value="1.2">
     </div>
     
     <div class="control-group">
-        <label>🔁 RAPPEL ÉLASTIQUE <span id="springVal" class="value-display">0.15</span></label>
-        <input type="range" id="springSpeed" min="0.08" max="0.28" step="0.005" value="0.15">
+        <label>🔁 RAPPEL ÉLASTIQUE <span id="springVal" class="value-display">0.14</span></label>
+        <input type="range" id="springSpeed" min="0.08" max="0.25" step="0.005" value="0.14">
     </div>
     
     <div class="control-group">
-        <label>💨 AMORTISSEMENT <span id="dampingVal" class="value-display">0.88</span></label>
-        <input type="range" id="wobbleFactor" min="0.75" max="0.96" step="0.005" value="0.88">
+        <label>💨 AMORTISSEMENT <span id="dampingVal" class="value-display">0.90</span></label>
+        <input type="range" id="wobbleFactor" min="0.78" max="0.97" step="0.005" value="0.90">
     </div>
     
     <div class="control-group">
-        <label>🕹️ FORCE TRACTION <span id="dragForceVal" class="value-display">1.8</span></label>
-        <input type="range" id="dragForce" min="0.5" max="2.8" step="0.05" value="1.8">
+        <label>🕹️ FORCE TRACTION <span id="dragForceVal" class="value-display">2.0</span></label>
+        <input type="range" id="dragForce" min="0.8" max="3.0" step="0.05" value="2.0">
     </div>
     
     <select id="windowSelector" class="panel-select">
-        <option value="0">🪟 Fenêtre 1 (Classique)</option>
-        <option value="1">🪟 Fenêtre 2 (Secondaire)</option>
-        <option value="2">🪟 Fenêtre 3 (Combo + Lampe)</option>
+        <option value="0">🪔 Fenêtre 1 (Lampe Magique)</option>
+        <option value="1">🪟 Fenêtre 2</option>
+        <option value="2">🪟 Fenêtre 3</option>
     </select>
     
     <button id="themeToggle" class="theme-toggle">🌓 THÈME CLAIR</button>
@@ -399,7 +449,7 @@
 </div>
 
 <div class="instructions">
-    🖱️ GLISSEZ une fenêtre → WOBBLE + LAMPE MAGIQUE (Combo) · Click → Focus · Panel → réglages
+    🖱️ GLISSEZ la barre de titre → WOBBLE (effet Compiz) · 🧞 Cliquez sur la lampe → Magie !
 </div>
 
 <script>
@@ -411,30 +461,27 @@
                    function(cb) { setTimeout(cb, 1000/60); };
         })();
 
-        // ===== GESTIONNAIRE WOBBLY ULTRA FLUIDE =====
+        // ========== WOBBLY WINDOW MANAGER ==========
         class CompizWobblyWindow {
             constructor(element, winIndex) {
                 this.element = element;
                 this.winIndex = winIndex;
-                this.isCombo = element.classList.contains('combo-window');
                 
-                // Paramètres physiques
                 this.params = {
-                    intensity: 1.0,
-                    springSpeed: 0.15,
-                    damping: 0.88,
-                    dragForce: 1.8,
-                    maxSkew: 12,
-                    maxScale: 0.10
+                    intensity: 1.2,
+                    springSpeed: 0.14,
+                    damping: 0.90,
+                    dragForce: 2.0,
+                    maxSkew: 14,
+                    maxScale: 0.12
                 };
                 
-                // État du drag (optimisé pour fluidité)
                 this.isDragging = false;
                 this.isMaximized = false;
                 this.normalLeft = 0, this.normalTop = 0, this.normalWidth = 0, this.normalHeight = 0;
-                this.dragOffsetX = 0, this.dragOffsetY = 0;  // Offset souris vs position fenêtre
+                this.dragStartX = 0, this.dragStartY = 0;
+                this.windowLeft = 0, this.windowTop = 0;
                 this.lastMouseX = 0, this.lastMouseY = 0;
-                this.dragVelocityX = 0, this.dragVelocityY = 0;
                 
                 // Déformation courante
                 this.currentSkewX = 0, this.currentSkewY = 0;
@@ -448,7 +495,7 @@
                 
                 this.animationId = null;
                 
-                // Bind des méthodes
+                this.init = this.init.bind(this);
                 this.onMouseDown = this.onMouseDown.bind(this);
                 this.onMouseMove = this.onMouseMove.bind(this);
                 this.onMouseUp = this.onMouseUp.bind(this);
@@ -457,9 +504,8 @@
                 this.animate = this.animate.bind(this);
                 this.bringToFront = this.bringToFront.bind(this);
                 this.toggleMaximize = this.toggleMaximize.bind(this);
-                this.updateMagicLayers = this.updateMagicLayers.bind(this);
                 
-                // Récupération de la barre de titre
+                // Attacher le drag à la barre de titre
                 this.titlebar = this.element.querySelector('[data-drag-handle]');
                 if (this.titlebar) {
                     this.titlebar.addEventListener('mousedown', this.onMouseDown);
@@ -481,9 +527,7 @@
                 if (minimizeBtn) minimizeBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.element.style.transform = 'scale(0.95)';
-                    setTimeout(() => {
-                        if (!this.isDragging) this.element.style.transform = '';
-                    }, 250);
+                    setTimeout(() => this.element.style.transform = '', 250);
                 });
                 
                 const maximizeBtn = this.element.querySelector('[data-action="maximize"]');
@@ -492,20 +536,13 @@
                     this.toggleMaximize();
                 });
                 
-                // Initialisation
+                this.init();
+                this.startAnimation();
+            }
+            
+            init() {
                 this.element.style.transformOrigin = 'center center';
                 this.element.style.willChange = 'transform, left, top';
-                
-                // Éléments magiques pour la combo window
-                if (this.isCombo) {
-                    this.magicLayers = [
-                        document.getElementById('magicLayer1'),
-                        document.getElementById('magicLayer2'),
-                        document.getElementById('magicLayer3')
-                    ];
-                }
-                
-                this.startAnimation();
             }
             
             bringToFront() {
@@ -538,8 +575,7 @@
                     this.element.style.width = '100%';
                     this.element.style.height = '100vh';
                     this.element.style.borderRadius = '0';
-                    const surface = this.element.querySelector('.window-surface');
-                    if (surface) surface.style.borderRadius = '0';
+                    this.element.querySelector('.window-surface').style.borderRadius = '0';
                     this.isMaximized = true;
                 } else {
                     this.element.style.left = this.normalLeft + 'px';
@@ -547,8 +583,7 @@
                     this.element.style.width = this.normalWidth + 'px';
                     this.element.style.height = this.normalHeight + 'px';
                     this.element.style.borderRadius = '24px';
-                    const surface = this.element.querySelector('.window-surface');
-                    if (surface) surface.style.borderRadius = '24px';
+                    this.element.querySelector('.window-surface').style.borderRadius = '24px';
                     this.isMaximized = false;
                 }
             }
@@ -557,7 +592,6 @@
                 const spring = this.params.springSpeed;
                 const damping = this.params.damping;
                 
-                // Retour élastique vers l'identité
                 this.skewVelX += (0 - this.currentSkewX) * spring;
                 this.skewVelY += (0 - this.currentSkewY) * spring;
                 this.skewVelX *= damping;
@@ -576,48 +610,16 @@
                 this.rotateVel *= damping;
                 this.currentRotate += this.rotateVel;
                 
-                // Limites
                 const maxSkew = this.params.maxSkew;
                 this.currentSkewX = Math.min(maxSkew, Math.max(-maxSkew, this.currentSkewX));
                 this.currentSkewY = Math.min(maxSkew, Math.max(-maxSkew, this.currentSkewY));
-                this.currentScaleX = Math.min(1 + this.params.maxScale, Math.max(1 - this.params.maxScale, this.currentScaleX));
-                this.currentScaleY = Math.min(1 + this.params.maxScale, Math.max(1 - this.params.maxScale, this.currentScaleY));
-                this.currentRotate = Math.min(4, Math.max(-4, this.currentRotate));
+                this.currentScaleX = Math.min(1.15, Math.max(0.85, this.currentScaleX));
+                this.currentScaleY = Math.min(1.15, Math.max(0.85, this.currentScaleY));
+                this.currentRotate = Math.min(5, Math.max(-5, this.currentRotate));
             }
             
             applyTransform() {
-                // Application fluide de la transformation
-                const transform = `translate(0px, 0px) scale(${this.currentScaleX}, ${this.currentScaleY}) skew(${this.currentSkewX}deg, ${this.currentSkewY}deg) rotate(${this.currentRotate}deg)`;
-                this.element.style.transform = transform;
-            }
-            
-            updateMagicLayers(velX, velY, mouseX, mouseY) {
-                if (!this.isCombo || !this.magicLayers) return;
-                
-                const rect = this.element.getBoundingClientRect();
-                const localX = mouseX - rect.left;
-                const localY = mouseY - rect.top;
-                const speed = Math.sqrt(velX * velX + velY * velY);
-                const intensity = Math.min(0.8, speed * 0.015) * this.params.intensity;
-                
-                // Activation des calques en fonction de la vitesse
-                this.magicLayers.forEach((layer, idx) => {
-                    if (!layer) return;
-                    const delay = idx * 0.1;
-                    const active = speed > 5 + idx * 3;
-                    
-                    if (active) {
-                        layer.classList.add('active');
-                        const x = localX + (Math.sin(Date.now() * 0.015 + idx) * 20);
-                        const y = localY + (Math.cos(Date.now() * 0.02 + idx) * 20);
-                        layer.style.setProperty('--x', `${x}%`);
-                        layer.style.setProperty('--y', `${y}%`);
-                        layer.style.opacity = Math.min(0.6, intensity * 1.5).toString();
-                    } else {
-                        layer.classList.remove('active');
-                        layer.style.opacity = '0';
-                    }
-                });
+                this.element.style.transform = `scale(${this.currentScaleX}, ${this.currentScaleY}) skew(${this.currentSkewX}deg, ${this.currentSkewY}deg) rotate(${this.currentRotate}deg)`;
             }
             
             onMouseDown(e) {
@@ -628,23 +630,17 @@
                 this.element.classList.add('dragging-active');
                 
                 const rect = this.element.getBoundingClientRect();
-                // Calcul direct de l'offset pour un drag parfaitement fluide
-                this.dragOffsetX = e.clientX - rect.left;
-                this.dragOffsetY = e.clientY - rect.top;
-                
+                this.dragStartX = e.clientX;
+                this.dragStartY = e.clientY;
+                this.windowLeft = rect.left;
+                this.windowTop = rect.top;
                 this.lastMouseX = e.clientX;
                 this.lastMouseY = e.clientY;
-                this.dragVelocityX = 0;
-                this.dragVelocityY = 0;
                 
-                // Origine de transformation au point de clic
-                const originX = (this.dragOffsetX / rect.width) * 100;
-                const originY = (this.dragOffsetY / rect.height) * 100;
-                this.element.style.transformOrigin = `${originX}% ${originY}%`;
-                
-                // Petite impulsion initiale
-                this.skewVelX += (Math.random() - 0.5) * 1.2;
-                this.skewVelY += (Math.random() - 0.5) * 1.2;
+                // Offset pour l'origine de transformation
+                const offsetX = (e.clientX - rect.left) / rect.width;
+                const offsetY = (e.clientY - rect.top) / rect.height;
+                this.element.style.transformOrigin = `${offsetX * 100}% ${offsetY * 100}%`;
                 
                 document.addEventListener('mousemove', this.onMouseMove);
                 document.addEventListener('mouseup', this.onMouseUp);
@@ -654,42 +650,33 @@
                 if (!this.isDragging) return;
                 e.preventDefault();
                 
-                // Position cible = souris - offset (drag fluide sans délai)
-                const targetLeft = e.clientX - this.dragOffsetX;
-                const targetTop = e.clientY - this.dragOffsetY;
+                const dx = e.clientX - this.dragStartX;
+                const dy = e.clientY - this.dragStartY;
                 
-                // Calcul de la vélocité pour le wobble
-                const velX = (e.clientX - this.lastMouseX) * 0.9;
-                const velY = (e.clientY - this.lastMouseY) * 0.9;
-                this.dragVelocityX = velX;
-                this.dragVelocityY = velY;
+                const velX = (e.clientX - this.lastMouseX) * 0.8;
+                const velY = (e.clientY - this.lastMouseY) * 0.8;
                 this.lastMouseX = e.clientX;
                 this.lastMouseY = e.clientY;
                 
-                // Déplacement immédiat (pas d'interpolation pour la fluidité)
-                this.element.style.left = targetLeft + 'px';
-                this.element.style.top = targetTop + 'px';
+                // Déplacement fluide de la fenêtre
+                this.element.style.left = (this.windowLeft + dx) + 'px';
+                this.element.style.top = (this.windowTop + dy) + 'px';
                 
-                // Application de la force de wobble basée sur la vélocité
+                // Effet wobble basé sur la vélocité
                 const intensity = this.params.intensity;
                 const force = this.params.dragForce;
                 
-                const targetSkewX = velY * 0.16 * force * intensity;
-                const targetSkewY = velX * 0.16 * force * intensity;
-                const targetScaleX = 1 + (Math.abs(velX) * 0.01 * force * intensity);
-                const targetScaleY = 1 + (Math.abs(velY) * 0.01 * force * intensity);
-                const targetRotate = (velX - velY) * 0.07 * force * intensity;
+                const targetSkewX = velY * 0.18 * force * intensity;
+                const targetSkewY = velX * 0.18 * force * intensity;
+                const targetScaleX = 1 + (Math.abs(velX) * 0.012 * force * intensity);
+                const targetScaleY = 1 + (Math.abs(velY) * 0.012 * force * intensity);
+                const targetRotate = (velX - velY) * 0.08 * force * intensity;
                 
-                this.skewVelX += (targetSkewX - this.currentSkewX) * 0.35;
-                this.skewVelY += (targetSkewY - this.currentSkewY) * 0.35;
-                this.scaleVelX += (targetScaleX - this.currentScaleX) * 0.3;
-                this.scaleVelY += (targetScaleY - this.currentScaleY) * 0.3;
-                this.rotateVel += (targetRotate - this.currentRotate) * 0.28;
-                
-                // Effet lampe magique pour la combo window
-                if (this.isCombo) {
-                    this.updateMagicLayers(velX, velY, e.clientX, e.clientY);
-                }
+                this.skewVelX += (targetSkewX - this.currentSkewX) * 0.3;
+                this.skewVelY += (targetSkewY - this.currentSkewY) * 0.3;
+                this.scaleVelX += (targetScaleX - this.currentScaleX) * 0.25;
+                this.scaleVelY += (targetScaleY - this.currentScaleY) * 0.25;
+                this.rotateVel += (targetRotate - this.currentRotate) * 0.2;
             }
             
             onMouseUp(e) {
@@ -699,7 +686,6 @@
                 document.removeEventListener('mousemove', this.onMouseMove);
                 document.removeEventListener('mouseup', this.onMouseUp);
                 
-                // Retour à l'origine centre
                 this.element.style.transformOrigin = 'center center';
                 
                 // Rebond élastique
@@ -707,14 +693,7 @@
                 this.skewVelY += (Math.random() - 0.5) * 2;
                 this.scaleVelX += (Math.random() - 0.5) * 0.04;
                 this.scaleVelY += (Math.random() - 0.5) * 0.04;
-                this.rotateVel += (Math.random() - 0.5) * 1.0;
-                
-                // Désactivation des calques magiques
-                if (this.isCombo && this.magicLayers) {
-                    this.magicLayers.forEach(layer => {
-                        if (layer) layer.style.opacity = '0';
-                    });
-                }
+                this.rotateVel += (Math.random() - 0.5) * 1;
             }
             
             animate() {
@@ -732,8 +711,65 @@
                 Object.assign(this.params, newParams);
             }
         }
-        
-        // ===== INITIALISATION =====
+
+        // ========== LAMPE MAGIQUE ==========
+        function initMagicLamp() {
+            const lamp = document.getElementById('magicLamp');
+            const messageDiv = document.getElementById('lampMessage');
+            const messages = [
+                '🧞‍♂️ Votre vœu est mon commandement !',
+                '✨ Un magnifique effet visuel apparaît !',
+                '🪄 La magie opère... Boum !',
+                '🌟 Les couleurs s\'intensifient !',
+                '🎭 Wobble + Magie = Parfait !',
+                '💫 Vous avez ouvert la lampe magique !'
+            ];
+            
+            if (lamp) {
+                lamp.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    
+                    // Effet visuel
+                    lamp.classList.add('lamp-glowing');
+                    setTimeout(() => lamp.classList.remove('lamp-glowing'), 500);
+                    
+                    // Message aléatoire
+                    const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+                    messageDiv.innerHTML = `🧞 ${randomMsg}`;
+                    messageDiv.style.opacity = '0';
+                    messageDiv.style.transition = 'opacity 0.3s';
+                    setTimeout(() => { messageDiv.style.opacity = '1'; }, 50);
+                    
+                    // Créer des étincelles
+                    for (let i = 0; i < 20; i++) {
+                        const sparkle = document.createElement('div');
+                        sparkle.className = 'genie-sparkle';
+                        sparkle.style.left = Math.random() * 100 + '%';
+                        sparkle.style.top = Math.random() * 100 + '%';
+                        sparkle.style.width = Math.random() * 8 + 2 + 'px';
+                        sparkle.style.height = sparkle.style.width;
+                        sparkle.style.background = `hsl(${Math.random() * 60 + 40}, 100%, 60%)`;
+                        sparkle.style.position = 'absolute';
+                        sparkle.style.pointerEvents = 'none';
+                        sparkle.style.zIndex = '1000';
+                        lamp.parentElement.appendChild(sparkle);
+                        
+                        setTimeout(() => {
+                            sparkle.style.transition = 'all 0.5s';
+                            sparkle.style.opacity = '0';
+                            sparkle.style.transform = `translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 80}px)`;
+                            setTimeout(() => sparkle.remove(), 500);
+                        }, 10);
+                    }
+                    
+                    // Petite animation wobble sur la lampe
+                    lamp.style.transform = 'scale(1.1)';
+                    setTimeout(() => { lamp.style.transform = ''; }, 200);
+                });
+            }
+        }
+
+        // ========== INITIALISATION ==========
         const windows = [];
         const winElements = document.querySelectorAll('.wobbly-window');
         winElements.forEach((el, idx) => {
@@ -745,7 +781,7 @@
         
         function updateActivePanel(index) {
             activeWindowIdx = index;
-            const names = ['Fenêtre 1 (Classique)', 'Fenêtre 2 (Secondaire)', 'Fenêtre 3 (Combo Lampe)'];
+            const names = ['Fenêtre 1 (Lampe Magique)', 'Fenêtre 2', 'Fenêtre 3'];
             document.getElementById('activeWinName').innerText = names[index];
             const win = windows[activeWindowIdx];
             if (win) {
@@ -777,7 +813,6 @@
         
         window.updateActivePanel = updateActivePanel;
         
-        // Événements UI
         document.getElementById('wobbleIntensity').addEventListener('input', () => { updateDisplayValues(); applyToActive(); });
         document.getElementById('springSpeed').addEventListener('input', () => { updateDisplayValues(); applyToActive(); });
         document.getElementById('wobbleFactor').addEventListener('input', () => { updateDisplayValues(); applyToActive(); });
@@ -790,15 +825,15 @@
         });
         
         document.getElementById('resetParamsBtn').addEventListener('click', () => {
-            document.getElementById('wobbleIntensity').value = '1.0';
-            document.getElementById('springSpeed').value = '0.15';
-            document.getElementById('wobbleFactor').value = '0.88';
-            document.getElementById('dragForce').value = '1.8';
+            document.getElementById('wobbleIntensity').value = '1.2';
+            document.getElementById('springSpeed').value = '0.14';
+            document.getElementById('wobbleFactor').value = '0.90';
+            document.getElementById('dragForce').value = '2.0';
             updateDisplayValues();
             applyToActive();
         });
         
-        // Thème
+        // Theme toggle
         let isDark = true;
         document.getElementById('themeToggle').addEventListener('click', () => {
             isDark = !isDark;
@@ -807,9 +842,13 @@
             document.getElementById('themeToggle').innerHTML = isDark ? '☀️ THÈME CLAIR' : '🌙 THÈME SOMBRE';
         });
         
-        updateActivePanel(2); // Sélectionne la Combo Window par défaut
-        if (windows[2]) windows[2].bringToFront();
-        console.log('✅ TOUTES LES FENÊTRES WOBBLY + COMBO WINDOW (lampe magique) ACTIVES - Drag & drop ultra fluide !');
+        // Initialiser la lampe magique
+        initMagicLamp();
+        
+        updateActivePanel(0);
+        if (windows[0]) windows[0].bringToFront();
+        
+        console.log('✅ COMBO WINDOW - Lampe Magique + Wobbly Compiz actifs !');
     })();
 </script>
 </body>
