@@ -1,5 +1,10 @@
 # UI-Library
-![UI-Library Demo](UI-library.gif)
+
+<p align="center">
+  <a href="https://lombard-web-services.github.io/UI/demo-ui.html">
+    <img src="https://github.com/Lombard-Web-Services/UI/UI-library.gif" alt="UI-Library Demo">
+  </a>
+</p>
 
 > Bibliothèque JavaScript d'effets UX/UI avancés — Fenêtres magiques, déformations élastiques et glassmorphism
 
