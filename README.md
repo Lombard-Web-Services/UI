@@ -19,8 +19,7 @@
   <strong>🪔 Lampe Magique</strong> · <strong>🌀 Wobbly Windows</strong> · <strong>🔮 Combo Window</strong>
 </p>
 
-
-**Demo en ligne :** [https://lombard-web-services.github.io/UI/demo-ui.html](https://lombard-web-services.github.io/UI/demo-ui.html)
+<p align="center">Demo en ligne : <a href="https://lombard-web-services.github.io/UI/demo-ui.html" target="_blank">ICI</a></p>
 
 ---
 
