@@ -10,7 +10,7 @@
     box-sizing: border-box;
 }
 
-/* Animation de fond principale */
+/* Animation de fond principale - prend toute la page sans bords arrondis */
 body {
     min-height: 100vh;
     background: radial-gradient(circle at 0% 0%, #0f0c29, #1a1a3e, #0a0a15);
@@ -38,7 +38,7 @@ body::before {
     100% { opacity: 0.1; transform: scale(1); }
 }
 
-/* Theme Light - avec contraste ameliore */
+/* Theme Light - contraste ameliore pour tous les textes */
 body.light-theme {
     background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
 }
@@ -50,7 +50,7 @@ body.light-theme::before {
 body.light-theme .window,
 body.light-theme .window-surface,
 body.light-theme .combo-window .window-surface {
-    background: rgba(30, 35, 55, 0.92);
+    background: rgba(25, 30, 45, 0.92);
     backdrop-filter: blur(12px);
     box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -58,22 +58,35 @@ body.light-theme .combo-window .window-surface {
 
 body.light-theme .title-bar,
 body.light-theme .window-titlebar {
-    background: rgba(20, 25, 45, 0.7);
+    background: rgba(15, 20, 35, 0.8);
     border-bottom-color: rgba(255, 255, 255, 0.15);
 }
 
 body.light-theme .title-text,
 body.light-theme .window-title {
-    color: #e0e0e0;
+    color: #ffffff;
+    font-weight: 600;
 }
 
 body.light-theme .window-content,
-body.light-theme .window-content p {
-    color: #d0d0d0;
+body.light-theme .window-content p,
+body.light-theme .content,
+body.light-theme .content p {
+    color: #e0e0e0;
 }
 
-body.light-theme .window-content h2 {
+body.light-theme .window-content h2,
+body.light-theme .content h2 {
     color: #ffffff;
+}
+
+body.light-theme .section-header h1,
+body.light-theme .section-header p {
+    color: #1a1a2e;
+}
+
+body.light-theme .section-header p {
+    color: #2a2a4e;
 }
 
 body.light-theme .content h2 {
@@ -86,7 +99,7 @@ body.light-theme .content h2 {
 body.light-theme .control-panel,
 body.light-theme .potentiometer-panel,
 body.light-theme .double-panel {
-    background: rgba(20, 25, 45, 0.9);
+    background: rgba(15, 20, 35, 0.9);
     border-color: rgba(255, 255, 255, 0.15);
 }
 
@@ -127,15 +140,19 @@ body.no-glass.light-theme .window,
 body.no-glass.light-theme .window-surface,
 body.no-glass.light-theme .control-panel,
 body.no-glass.light-theme .double-panel {
-    background: rgba(15, 20, 35, 0.95);
+    background: rgba(10, 15, 25, 0.95);
 }
 
-/* Background speciaux pour Wobbly et Combo */
+/* Background pour Wobbly et Combo - degrade plein ecran sans border radius */
 .wobbly-container,
 .combo-container {
-    background: linear-gradient(135deg, #0a5f5f, #1a0a3e);
-    position: relative;
-    border-radius: 24px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #0a6b6b, #1a0a5e);
+    border-radius: 0;
     overflow: hidden;
 }
 
@@ -147,13 +164,13 @@ body.no-glass.light-theme .double-panel {
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at 20% 40%, rgba(0,255,200,0.1), rgba(128,0,255,0.1));
+    background: radial-gradient(circle at 20% 40%, rgba(0,255,200,0.12), rgba(128,0,255,0.12));
     pointer-events: none;
 }
 
 body.light-theme .wobbly-container,
 body.light-theme .combo-container {
-    background: linear-gradient(135deg, #0a3a3a, #1a0a2e);
+    background: linear-gradient(135deg, #0a4a4a, #1a0a3e);
 }
 
 /* ============================================================
@@ -238,7 +255,7 @@ body.light-theme .combo-container {
     top: 8px;
 }
 
-/* Control Button */
+/* Control Button - Version elegante */
 .control-btn {
     position: fixed;
     bottom: 40px;
@@ -329,7 +346,7 @@ body.light-theme .combo-container {
 .windows-container {
     position: relative;
     width: 100%;
-    height: calc(100vh - 80px);
+    height: 100%;
     overflow: visible;
     padding: 20px;
 }
@@ -342,7 +359,6 @@ body.light-theme .combo-container {
     cursor: default;
     transition: z-index 0s;
     will-change: transform, left, top;
-    transform-origin: var(--origin-x, 50%) var(--origin-y, 50%);
 }
 
 .window-surface {
@@ -384,6 +400,36 @@ body.light-theme .combo-container {
 .window-controls {
     display: flex;
     gap: 10px;
+    align-items: center;
+}
+
+.window-btn {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.window-btn:hover { transform: scale(1.2); }
+.btn-close { background: #ff5f56; }
+.btn-minimize { background: #ffbd2e; }
+.btn-maximize { 
+    background: #27c93f;
+    position: relative;
+}
+.btn-maximize::after {
+    content: "□";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 8px;
+    color: white;
+    font-weight: bold;
 }
 
 .window-content {
@@ -471,18 +517,6 @@ body.light-theme .combo-container {
     padding: 8px 12px;
     border-radius: 16px;
     font-size: 12px;
-    cursor: pointer;
-    margin-top: 8px;
-}
-.theme-toggle {
-    width: 100%;
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    border: none;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 16px;
-    font-size: 12px;
-    font-weight: 600;
     cursor: pointer;
     margin-top: 8px;
 }
@@ -593,6 +627,62 @@ body.light-theme .combo-container {
     -webkit-appearance: none;
 }
 
+.double-panel .wobbly-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.double-panel .wobbly-toggle label {
+    cursor: pointer;
+    color: #ffbd2e;
+}
+
+.double-panel .wobbly-toggle input {
+    width: auto;
+    margin: 0;
+    transform: scale(1.2);
+    cursor: pointer;
+}
+
+/* Bouton theme global - elegant */
+.global-theme-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 10px 20px;
+    border-radius: 40px;
+    color: #ffbd2e;
+    cursor: pointer;
+    z-index: 1001;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    letter-spacing: 1px;
+}
+
+.global-theme-btn:hover {
+    background: rgba(255, 189, 46, 0.3);
+    transform: translateY(-2px);
+    border-color: rgba(255, 189, 46, 0.5);
+}
+
+body.light-theme .global-theme-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: #1a1a2e;
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme .global-theme-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .window { width: 90%; }
@@ -602,6 +692,6 @@ body.light-theme .combo-container {
     .potentiometer { width: 100%; }
     .control-btn { padding: 10px 20px; font-size: 12px; }
     .control-panel { width: 260px; padding: 16px; bottom: auto; top: 80px; }
-    .double-panel { width: 280px; }
-    .windows-container { height: auto; min-height: 500px; }
+    .double-panel { width: 280px; bottom: auto; top: 80px; }
+    .global-theme-btn { top: 20px; right: 20px; }
 }
