@@ -96,7 +96,7 @@
         .debug-info {
             position: fixed;
             top: 20px;
-            right: 20px;
+            left: 20px;
             background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(10px);
             color: #a7f3d0;
@@ -109,14 +109,15 @@
         
         .demo-info {
             position: fixed;
-            top: 20px;
+            bottom: 20px;
             left: 20px;
             background: rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(10px);
-            padding: 10px 20px;
+            padding: 8px 16px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 11px;
             z-index: 100;
+            pointer-events: none;
         }
         
         .wobbly-container {
@@ -151,11 +152,7 @@
             width: 560px;
         }
         
-        /* Cache le bouton lampe magique sur les autres sections */
-        .demo-section:not(.active) .control-btn:not(#comboActionBtn) {
-            display: none;
-        }
-        
+        /* Cache les boutons specifiques selon la section active */
         #magicSection .control-btn {
             display: block;
         }
@@ -168,11 +165,32 @@
         #comboSection #comboActionBtn {
             display: block;
         }
+        
+        /* Style pour le toggle wobbly dans combo */
+        .wobbly-toggle-switch {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .wobbly-toggle-switch label {
+            cursor: pointer;
+            color: #ffbd2e;
+            font-size: 12px;
+        }
+        
+        .wobbly-toggle-switch input {
+            width: auto;
+            margin: 0;
+            transform: scale(1.2);
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-
-<button class="global-theme-btn" id="globalThemeBtn">🌓 Theme Clair</button>
 
 <div class="demo-container">
     <!-- Section Lampe Magique -->
@@ -383,6 +401,11 @@
                 <label>🕹️ Force <span id="comboWobForceVal">2.0</span></label>
                 <input type="range" id="comboWobForce" min="0.5" max="3.2" step="0.05" value="2.0">
             </div>
+            
+            <div class="wobbly-toggle-switch">
+                <label>🌀 Activer l'effet Wobbly</label>
+                <input type="checkbox" id="comboWobblyToggle" checked>
+            </div>
         </div>
     </div>
 </div>
@@ -395,6 +418,8 @@
 
 <div class="demo-info">🧭 UI-Library v1.0.0</div>
 <div class="debug-info" id="debugInfo">✅ Pret</div>
+
+<button class="global-theme-btn" id="globalThemeBtn">🌓 Theme Clair</button>
 
 <script src="UI-Library.js"></script>
 <script>
@@ -412,18 +437,18 @@
             }
         }
         
-        // Theme global
+        // Theme global - elegant
         var isDark = true;
+        var themeBtn = document.getElementById('globalThemeBtn');
+        
         function setTheme(isDarkMode) {
             isDark = isDarkMode;
             document.body.classList.toggle('light-theme', !isDark);
-            var themeBtn = document.getElementById('globalThemeBtn');
             if (themeBtn) {
-                themeBtn.innerHTML = isDark ? '🌓 Theme Clair' : '🌙 Theme Sombre';
+                themeBtn.innerHTML = isDark ? '☀️ Theme Clair' : '🌙 Theme Sombre';
             }
         }
         
-        var themeBtn = document.getElementById('globalThemeBtn');
         if (themeBtn) {
             themeBtn.addEventListener('click', function() {
                 setTheme(!isDark);
@@ -550,10 +575,12 @@
         var comboBtn = document.getElementById('comboActionBtn');
         var comboMinimizeTrigger = document.getElementById('comboMinimizeTrigger');
         var comboMaximizeTrigger = document.getElementById('comboMaximizeTrigger');
+        var comboToggle = document.getElementById('comboWobblyToggle');
         
         var combo = new UILibrary.ComboWindow(comboWindow, comboBtn, {
             duration: 700, skewIntensity: 50, glassEnabled: true,
-            wobblyIntensity: 1.2, springSpeed: 0.14, damping: 0.89, dragForce: 2.0
+            wobblyIntensity: 1.2, springSpeed: 0.14, damping: 0.89, dragForce: 2.0,
+            wobblyEnabled: true
         });
         
         if (comboMinimizeTrigger) {
@@ -607,8 +634,16 @@
             combo.updateWobblyOptions({ dragForce: val });
         });
         
+        if (comboToggle) {
+            comboToggle.addEventListener('change', function(e) {
+                var enabled = e.target.checked;
+                combo.updateWobblyOptions({ wobblyEnabled: enabled });
+                debug('Effet Wobbly ' + (enabled ? 'active' : 'desactive'));
+            });
+        }
+        
         // ============================================================
-        // NAVIGATION
+        // NAVIGATION - Cache les boutons specifiques
         // ============================================================
         
         var navBtns = document.querySelectorAll('.nav-btn');
