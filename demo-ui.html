@@ -5,190 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>UI-Library | Lampe Magique & Wobbly Windows & Combo</title>
     <link rel="stylesheet" href="UI-Library.css">
-    <style>
-        .demo-container {
-            position: relative;
-            width: 100%;
-            height: 100vh;
-        }
-        
-        .demo-section {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.4s ease, visibility 0.4s ease;
-            overflow: hidden;
-        }
-        
-        .demo-section.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .section-header {
-            text-align: center;
-            padding: 20px;
-            color: white;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 20;
-            pointer-events: none;
-        }
-        
-        body.light-theme .section-header h1 {
-            color: #1a1a2e;
-        }
-        
-        body.light-theme .section-header p {
-            color: #2a2a4e;
-        }
-        
-        .section-header h1 {
-            font-size: 2rem;
-            margin-bottom: 8px;
-        }
-        
-        .nav-bar {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(16px);
-            border-radius: 60px;
-            padding: 8px 20px;
-            display: flex;
-            gap: 16px;
-            z-index: 1000;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .nav-btn {
-            padding: 10px 24px;
-            border-radius: 40px;
-            border: none;
-            background: transparent;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        body.light-theme .nav-btn {
-            color: #1a1a2e;
-        }
-        
-        .nav-btn.active {
-            background: linear-gradient(135deg, #ffbd2e, #a78bfa);
-            color: #1a1a2e;
-        }
-        
-        .nav-btn:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        .debug-info {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-            color: #a7f3d0;
-            padding: 8px 16px;
-            border-radius: 16px;
-            font-family: monospace;
-            font-size: 11px;
-            z-index: 100;
-        }
-        
-        .demo-info {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 11px;
-            z-index: 100;
-            pointer-events: none;
-        }
-        
-        .wobbly-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-        
-        .combo-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-        
-        .wobbly-window {
-            position: absolute;
-        }
-        
-        .wobbly-window[data-win-id="0"] { left: 60px; top: 80px; }
-        .wobbly-window[data-win-id="1"] { left: 520px; top: 180px; width: 460px; min-height: 380px; }
-        .wobbly-window[data-win-id="2"] { left: 300px; top: 480px; width: 440px; min-height: 340px; }
-        
-        .combo-window {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: 560px;
-        }
-        
-        /* Cache les boutons specifiques selon la section active */
-        #magicSection .control-btn {
-            display: block;
-        }
-        
-        #wobblySection .control-btn,
-        #comboSection .control-btn:not(#comboActionBtn) {
-            display: none;
-        }
-        
-        #comboSection #comboActionBtn {
-            display: block;
-        }
-        
-        /* Style pour le toggle wobbly dans combo */
-        .wobbly-toggle-switch {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .wobbly-toggle-switch label {
-            cursor: pointer;
-            color: #ffbd2e;
-            font-size: 12px;
-        }
-        
-        .wobbly-toggle-switch input {
-            width: auto;
-            margin: 0;
-            transform: scale(1.2);
-            cursor: pointer;
-        }
-    </style>
 </head>
 <body>
 
@@ -222,6 +38,8 @@
             </div>
         </div>
         
+        <button id="magicActionBtn" class="control-btn">🪔 Minimiser</button>
+        
         <div class="potentiometer-panel">
             <div class="potentiometer-group">
                 <span class="potentiometer-label">⏱️ Duree</span>
@@ -249,7 +67,7 @@
         </div>
         
         <div class="wobbly-container" id="wobblyContainer">
-            <div class="wobbly-window" data-win-id="0">
+            <div class="wobbly-window" data-win-id="0" style="left: 60px; top: 80px;">
                 <div class="window-surface">
                     <div class="window-titlebar" data-drag-handle>
                         <span class="window-title">🌀 COMPIZ STYLE · Fenetre Principale</span>
@@ -267,7 +85,7 @@
                     </div>
                 </div>
             </div>
-            <div class="wobbly-window" data-win-id="1">
+            <div class="wobbly-window" data-win-id="1" style="left: 520px; top: 180px; width: 460px;">
                 <div class="window-surface">
                     <div class="window-titlebar" data-drag-handle>
                         <span class="window-title">📐 Fenetre Secondaire</span>
@@ -286,7 +104,7 @@
                     </div>
                 </div>
             </div>
-            <div class="wobbly-window" data-win-id="2">
+            <div class="wobbly-window" data-win-id="2" style="left: 300px; top: 480px; width: 440px;">
                 <div class="window-surface">
                     <div class="window-titlebar" data-drag-handle>
                         <span class="window-title">🎨 Troisieme Fenetre</span>
@@ -364,6 +182,7 @@
                         </ul>
                     </div>
                 </div>
+                <div class="wobbly-content" id="comboWobblyContent"></div>
             </div>
         </div>
         
@@ -416,54 +235,29 @@
     <button class="nav-btn" data-section="combo">🔮 Combo</button>
 </div>
 
-<div class="demo-info">🧭 UI-Library v1.0.0</div>
-<div class="debug-info" id="debugInfo">✅ Pret</div>
-
 <button class="global-theme-btn" id="globalThemeBtn">🌓 Theme Clair</button>
 
 <script src="UI-Library.js"></script>
 <script>
     (function() {
-        var debugEl = document.getElementById('debugInfo');
-        function debug(msg) {
-            console.log('[Demo]', msg);
-            if (debugEl) {
-                debugEl.textContent = msg;
-                setTimeout(function() {
-                    if (debugEl && debugEl.textContent === msg) {
-                        debugEl.textContent = '✅ UI-Library v1.0.0';
-                    }
-                }, 2500);
-            }
-        }
-        
-        // Theme global - elegant
+        // Theme global
         var isDark = true;
         var themeBtn = document.getElementById('globalThemeBtn');
         
         function setTheme(isDarkMode) {
             isDark = isDarkMode;
             document.body.classList.toggle('light-theme', !isDark);
-            if (themeBtn) {
-                themeBtn.innerHTML = isDark ? '☀️ Theme Clair' : '🌙 Theme Sombre';
-            }
+            themeBtn.innerHTML = isDark ? '☀️ Theme Clair' : '🌙 Theme Sombre';
         }
         
-        if (themeBtn) {
-            themeBtn.addEventListener('click', function() {
-                setTheme(!isDark);
-            });
-        }
+        themeBtn.addEventListener('click', function() { setTheme(!isDark); });
         
         // ============================================================
         // LAMPE MAGIQUE
         // ============================================================
         
         var magicWindow = document.getElementById('magicWindow');
-        var magicBtn = document.createElement('button');
-        magicBtn.className = 'control-btn';
-        magicBtn.innerHTML = '🪔 Minimiser';
-        document.body.appendChild(magicBtn);
+        var magicBtn = document.getElementById('magicActionBtn');
         
         var magicGenie = new UILibrary.GenieEffect(magicWindow, magicBtn, {
             duration: 700, skewIntensity: 50, glassEnabled: true
@@ -471,17 +265,17 @@
         
         document.getElementById('magicDuration').addEventListener('input', function(e) {
             var val = parseInt(e.target.value);
-            document.getElementById('durationValue').textContent = val + 'ms';
+            document.getElementById('durationValue').innerHTML = val + 'ms';
             magicGenie.updateOptions({ duration: val });
         });
         document.getElementById('magicSkew').addEventListener('input', function(e) {
             var val = parseInt(e.target.value);
-            document.getElementById('skewValue').textContent = val + '°';
+            document.getElementById('skewValue').innerHTML = val + '°';
             magicGenie.updateOptions({ skewIntensity: val });
         });
         document.getElementById('magicGlass').addEventListener('input', function(e) {
             var val = parseInt(e.target.value) === 1;
-            document.getElementById('glassValue').textContent = val ? 'Active' : 'Desactive';
+            document.getElementById('glassValue').innerHTML = val ? 'Active' : 'Desactive';
             magicGenie.updateOptions({ glassEnabled: val });
         });
         
@@ -491,13 +285,17 @@
         
         var wobblyWindows = [];
         var wobblyElements = document.querySelectorAll('.wobbly-window');
+        
         wobblyElements.forEach(function(el, idx) {
-            wobblyWindows.push(new UILibrary.WobblyWindow(el, {
+            var surface = el.querySelector('.window-surface');
+            var wobbly = new UILibrary.WobblyWindow(el, surface, {
                 intensity: 1.2, springSpeed: 0.14, damping: 0.89, dragForce: 2.0
-            }));
+            });
+            wobblyWindows.push(wobbly);
         });
         
         var activeWindowIdx = 0;
+        
         function updateWobblyUI() {
             var win = wobblyWindows[activeWindowIdx];
             if (win) {
@@ -505,10 +303,10 @@
                 document.getElementById('springSpeed').value = win.options.springSpeed;
                 document.getElementById('wobbleFactor').value = win.options.damping;
                 document.getElementById('dragForce').value = win.options.dragForce;
-                document.getElementById('intensityVal').innerText = win.options.intensity;
-                document.getElementById('springVal').innerText = win.options.springSpeed;
-                document.getElementById('dampingVal').innerText = win.options.damping;
-                document.getElementById('dragForceVal').innerText = win.options.dragForce;
+                document.getElementById('intensityVal').innerHTML = win.options.intensity;
+                document.getElementById('springVal').innerHTML = win.options.springSpeed;
+                document.getElementById('dampingVal').innerHTML = win.options.damping;
+                document.getElementById('dragForceVal').innerHTML = win.options.dragForce;
             }
         }
         
@@ -524,45 +322,38 @@
         }
         
         document.getElementById('wobbleIntensity').addEventListener('input', function() {
-            document.getElementById('intensityVal').innerText = this.value;
+            document.getElementById('intensityVal').innerHTML = this.value;
             applyWobblyToActive();
         });
         document.getElementById('springSpeed').addEventListener('input', function() {
-            document.getElementById('springVal').innerText = this.value;
+            document.getElementById('springVal').innerHTML = this.value;
             applyWobblyToActive();
         });
         document.getElementById('wobbleFactor').addEventListener('input', function() {
-            document.getElementById('dampingVal').innerText = this.value;
+            document.getElementById('dampingVal').innerHTML = this.value;
             applyWobblyToActive();
         });
         document.getElementById('dragForce').addEventListener('input', function() {
-            document.getElementById('dragForceVal').innerText = this.value;
+            document.getElementById('dragForceVal').innerHTML = this.value;
             applyWobblyToActive();
         });
         
-        var selector = document.getElementById('windowSelector');
-        if (selector) {
-            selector.addEventListener('change', function(e) {
-                activeWindowIdx = parseInt(e.target.value);
-                var names = ['Fenetre 1', 'Fenetre 2', 'Fenetre 3'];
-                var activeNameSpan = document.getElementById('activeWinName');
-                if (activeNameSpan) activeNameSpan.innerText = names[activeWindowIdx];
-                updateWobblyUI();
-                if (wobblyWindows[activeWindowIdx]) wobblyWindows[activeWindowIdx].bringToFront();
-            });
-        }
+        document.getElementById('windowSelector').addEventListener('change', function(e) {
+            activeWindowIdx = parseInt(e.target.value);
+            var names = ['Fenetre 1', 'Fenetre 2', 'Fenetre 3'];
+            document.getElementById('activeWinName').innerHTML = names[activeWindowIdx];
+            updateWobblyUI();
+            if (wobblyWindows[activeWindowIdx]) wobblyWindows[activeWindowIdx].bringToFront();
+        });
         
-        var resetBtn = document.getElementById('resetParamsBtn');
-        if (resetBtn) {
-            resetBtn.addEventListener('click', function() {
-                document.getElementById('wobbleIntensity').value = '1.2';
-                document.getElementById('springSpeed').value = '0.14';
-                document.getElementById('wobbleFactor').value = '0.89';
-                document.getElementById('dragForce').value = '2.0';
-                updateWobblyUI();
-                applyWobblyToActive();
-            });
-        }
+        document.getElementById('resetParamsBtn').addEventListener('click', function() {
+            document.getElementById('wobbleIntensity').value = '1.2';
+            document.getElementById('springSpeed').value = '0.14';
+            document.getElementById('wobbleFactor').value = '0.89';
+            document.getElementById('dragForce').value = '2.0';
+            updateWobblyUI();
+            applyWobblyToActive();
+        });
         
         updateWobblyUI();
         if (wobblyWindows[0]) wobblyWindows[0].bringToFront();
@@ -576,8 +367,15 @@
         var comboMinimizeTrigger = document.getElementById('comboMinimizeTrigger');
         var comboMaximizeTrigger = document.getElementById('comboMaximizeTrigger');
         var comboToggle = document.getElementById('comboWobblyToggle');
+        var comboContent = document.getElementById('comboWobblyContent');
         
-        var combo = new UILibrary.ComboWindow(comboWindow, comboBtn, {
+        // Transferer le contenu existant vers le wrapper wobbly-content
+        var originalContent = comboWindow.querySelector('.window-surface');
+        if (originalContent && comboContent) {
+            comboContent.appendChild(originalContent);
+        }
+        
+        var combo = new UILibrary.ComboWindow(comboWindow, comboContent, comboBtn, {
             duration: 700, skewIntensity: 50, glassEnabled: true,
             wobblyIntensity: 1.2, springSpeed: 0.14, damping: 0.89, dragForce: 2.0,
             wobblyEnabled: true
@@ -599,38 +397,38 @@
         
         document.getElementById('comboDuration').addEventListener('input', function(e) {
             var val = parseInt(e.target.value);
-            document.getElementById('comboDurationVal').textContent = val + 'ms';
+            document.getElementById('comboDurationVal').innerHTML = val + 'ms';
             combo.updateGenieOptions({ duration: val });
         });
         document.getElementById('comboSkew').addEventListener('input', function(e) {
             var val = parseInt(e.target.value);
-            document.getElementById('comboSkewVal').textContent = val + '°';
+            document.getElementById('comboSkewVal').innerHTML = val + '°';
             combo.updateGenieOptions({ skewIntensity: val });
         });
         document.getElementById('comboGlass').addEventListener('input', function(e) {
             var val = parseInt(e.target.value) === 1;
-            document.getElementById('comboGlassVal').textContent = val ? 'Active' : 'Desactive';
+            document.getElementById('comboGlassVal').innerHTML = val ? 'Active' : 'Desactive';
             combo.updateGenieOptions({ glassEnabled: val });
         });
         
         document.getElementById('comboWobIntensity').addEventListener('input', function(e) {
             var val = parseFloat(e.target.value);
-            document.getElementById('comboWobIntensityVal').textContent = val;
+            document.getElementById('comboWobIntensityVal').innerHTML = val;
             combo.updateWobblyOptions({ intensity: val });
         });
         document.getElementById('comboWobSpring').addEventListener('input', function(e) {
             var val = parseFloat(e.target.value);
-            document.getElementById('comboWobSpringVal').textContent = val;
+            document.getElementById('comboWobSpringVal').innerHTML = val;
             combo.updateWobblyOptions({ springSpeed: val });
         });
         document.getElementById('comboWobDamping').addEventListener('input', function(e) {
             var val = parseFloat(e.target.value);
-            document.getElementById('comboWobDampingVal').textContent = val;
+            document.getElementById('comboWobDampingVal').innerHTML = val;
             combo.updateWobblyOptions({ damping: val });
         });
         document.getElementById('comboWobForce').addEventListener('input', function(e) {
             var val = parseFloat(e.target.value);
-            document.getElementById('comboWobForceVal').textContent = val;
+            document.getElementById('comboWobForceVal').innerHTML = val;
             combo.updateWobblyOptions({ dragForce: val });
         });
         
@@ -638,12 +436,11 @@
             comboToggle.addEventListener('change', function(e) {
                 var enabled = e.target.checked;
                 combo.updateWobblyOptions({ wobblyEnabled: enabled });
-                debug('Effet Wobbly ' + (enabled ? 'active' : 'desactive'));
             });
         }
         
         // ============================================================
-        // NAVIGATION - Cache les boutons specifiques
+        // NAVIGATION
         // ============================================================
         
         var navBtns = document.querySelectorAll('.nav-btn');
@@ -663,18 +460,13 @@
                 
                 if (section === 'magic') {
                     magicSection.classList.add('active');
-                    debug('Lampe Magique activee');
                 } else if (section === 'wobbly') {
                     wobblySection.classList.add('active');
-                    debug('Wobbly Windows actif');
                 } else if (section === 'combo') {
                     comboSec.classList.add('active');
-                    debug('Combo Window actif');
                 }
             });
         });
-        
-        debug('UI-Library v1.0.0 - Pret');
     })();
 </script>
 </body>
