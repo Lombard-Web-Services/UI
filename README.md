@@ -6,7 +6,7 @@
   </a>
 </p>
 
-> Bibliothèque JavaScript d'effets UX/UI avancés — Fenêtres magiques, déformations élastiques et glassmorphism
+** Bibliothèque JavaScript d'effets UX/UI avancés — Fenêtres magiques, déformations élastiques et glassmorphism **
 
 <p align="center">
   <img src="https://img.shields.io/badge/version-1.0.0-blue?style=flat-square" alt="Version">
