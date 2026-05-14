@@ -321,13 +321,6 @@
                 });
             }
             
-            var closeBtn = this.element.querySelector('.close');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', function() {
-                    // Fonctionnalité de fermeture
-                });
-            }
-            
             window.addEventListener('resize', this._onResize.bind(this));
         },
         
@@ -508,12 +501,11 @@
     };
 
     // ============================================================
-    // MODULE 2: WOBBLY WINDOW (Compiz Style) - Version corrigee
+    // MODULE 2: WOBBLY WINDOW (Compiz Style)
     // ============================================================
     
-    function WobblyWindow(wrapperElement, contentElement, options) {
-        this.wrapper = wrapperElement;
-        this.element = contentElement;
+    function WobblyWindow(element, options) {
+        this.element = element;
         this.options = {
             intensity: (options && options.intensity) || 1.2,
             springSpeed: (options && options.springSpeed) || 0.14,
@@ -560,15 +552,15 @@
         
         _init: function() {
             this.element.style.transformOrigin = 'center center';
-            this.element.style.willChange = 'transform';
+            this.element.style.willChange = 'transform, left, top';
             
-            var titlebar = this.wrapper.querySelector('[data-drag-handle]');
+            var titlebar = this.element.querySelector('[data-drag-handle]');
             if (titlebar) {
                 titlebar.addEventListener('mousedown', this._onMouseDown.bind(this));
             }
             
             var self = this;
-            this.wrapper.addEventListener('mousedown', function(e) {
+            this.element.addEventListener('mousedown', function(e) {
                 if (!e.target.closest('.window-btn')) {
                     self.bringToFront();
                 }
@@ -580,34 +572,34 @@
         },
         
         _saveNormalBounds: function() {
-            var rect = this.wrapper.getBoundingClientRect();
+            var rect = this.element.getBoundingClientRect();
             this.normalLeft = rect.left;
             this.normalTop = rect.top;
-            this.normalWidth = this.wrapper.offsetWidth;
-            this.normalHeight = this.wrapper.offsetHeight;
+            this.normalWidth = this.element.offsetWidth;
+            this.normalHeight = this.element.offsetHeight;
         },
         
         _bindButtons: function() {
             var self = this;
             
-            var closeBtn = this.wrapper.querySelector('[data-action="close"]');
+            var closeBtn = this.element.querySelector('[data-action="close"]');
             if (closeBtn) {
                 closeBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    self.wrapper.style.display = 'none';
+                    self.element.style.display = 'none';
                 });
             }
             
-            var minimizeBtn = this.wrapper.querySelector('[data-action="minimize"]');
+            var minimizeBtn = this.element.querySelector('[data-action="minimize"]');
             if (minimizeBtn) {
                 minimizeBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    self.wrapper.style.transform = 'scale(0.95)';
-                    setTimeout(function() { self.wrapper.style.transform = ''; }, 250);
+                    self.element.style.transform = 'scale(0.95)';
+                    setTimeout(function() { self.element.style.transform = ''; }, 250);
                 });
             }
             
-            var maximizeBtn = this.wrapper.querySelector('[data-action="maximize"]');
+            var maximizeBtn = this.element.querySelector('[data-action="maximize"]');
             if (maximizeBtn) {
                 maximizeBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -624,36 +616,36 @@
                 if (z > maxZ) maxZ = z;
                 win.classList.remove('focused');
             });
-            this.wrapper.style.zIndex = maxZ + 1;
-            this.wrapper.classList.add('focused');
+            this.element.style.zIndex = maxZ + 1;
+            this.element.classList.add('focused');
         },
         
         toggleMaximize: function() {
             if (!this.isMaximized) {
-                var rect = this.wrapper.getBoundingClientRect();
+                var rect = this.element.getBoundingClientRect();
                 this.normalLeft = rect.left;
                 this.normalTop = rect.top;
-                this.normalWidth = this.wrapper.offsetWidth;
-                this.normalHeight = this.wrapper.offsetHeight;
+                this.normalWidth = this.element.offsetWidth;
+                this.normalHeight = this.element.offsetHeight;
                 
-                this.wrapper.style.left = '0';
-                this.wrapper.style.top = '0';
-                this.wrapper.style.width = '100%';
-                this.wrapper.style.height = '100vh';
-                var surface = this.wrapper.querySelector('.window-surface');
+                this.element.style.left = '0';
+                this.element.style.top = '0';
+                this.element.style.width = '100%';
+                this.element.style.height = '100vh';
+                var surface = this.element.querySelector('.window-surface');
                 if (surface) surface.style.borderRadius = '0';
-                this.wrapper.style.borderRadius = '0';
+                this.element.style.borderRadius = '0';
                 this.isMaximized = true;
                 this.windowLeft = 0;
                 this.windowTop = 0;
             } else {
-                this.wrapper.style.left = this.normalLeft + 'px';
-                this.wrapper.style.top = this.normalTop + 'px';
-                this.wrapper.style.width = this.normalWidth + 'px';
-                this.wrapper.style.height = this.normalHeight + 'px';
-                var surface = this.wrapper.querySelector('.window-surface');
+                this.element.style.left = this.normalLeft + 'px';
+                this.element.style.top = this.normalTop + 'px';
+                this.element.style.width = this.normalWidth + 'px';
+                this.element.style.height = this.normalHeight + 'px';
+                var surface = this.element.querySelector('.window-surface');
                 if (surface) surface.style.borderRadius = '24px';
-                this.wrapper.style.borderRadius = '24px';
+                this.element.style.borderRadius = '24px';
                 this.isMaximized = false;
                 this.windowLeft = this.normalLeft;
                 this.windowTop = this.normalTop;
@@ -668,9 +660,9 @@
             e.preventDefault();
             this.bringToFront();
             this.isDragging = true;
-            this.wrapper.classList.add('dragging-active');
+            this.element.classList.add('dragging-active');
             
-            var rect = this.wrapper.getBoundingClientRect();
+            var rect = this.element.getBoundingClientRect();
             this.dragStartX = e.clientX;
             this.dragStartY = e.clientY;
             this.windowLeft = rect.left;
@@ -703,11 +695,11 @@
             
             var newLeft = this.windowLeft + dx;
             var newTop = this.windowTop + dy;
-            newLeft = Math.max(5, Math.min(newLeft, window.innerWidth - this.wrapper.offsetWidth - 5));
-            newTop = Math.max(5, Math.min(newTop, window.innerHeight - this.wrapper.offsetHeight - 5));
+            newLeft = Math.max(5, Math.min(newLeft, window.innerWidth - this.element.offsetWidth - 5));
+            newTop = Math.max(5, Math.min(newTop, window.innerHeight - this.element.offsetHeight - 5));
             
-            this.wrapper.style.left = newLeft + 'px';
-            this.wrapper.style.top = newTop + 'px';
+            this.element.style.left = newLeft + 'px';
+            this.element.style.top = newTop + 'px';
             
             var intensity = this.options.intensity;
             var force = this.options.dragForce;
@@ -737,7 +729,7 @@
         _onMouseUp: function(e) {
             if (!this.isDragging) return;
             this.isDragging = false;
-            this.wrapper.classList.remove('dragging-active');
+            this.element.classList.remove('dragging-active');
             document.removeEventListener('mousemove', this._onMouseMove);
             document.removeEventListener('mouseup', this._onMouseUp);
             
@@ -751,7 +743,7 @@
             this.scaleVelY += (Math.random() - 0.5) * 0.05;
             this.rotateVel += (Math.random() - 0.5) * 1.2;
             
-            var rect = this.wrapper.getBoundingClientRect();
+            var rect = this.element.getBoundingClientRect();
             this.windowLeft = rect.left;
             this.windowTop = rect.top;
         },
@@ -785,7 +777,7 @@
             this.currentScaleY = Math.min(1 + this.options.maxScale, Math.max(1 - this.options.maxScale, this.currentScaleY));
             this.currentRotate = Math.min(5, Math.max(-5, this.currentRotate));
             
-            var transform = 'scale(' + this.currentScaleX + ', ' + this.currentScaleY + ') skew(' + this.currentSkewX + 'deg, ' + this.currentSkewY + 'deg) rotate(' + this.currentRotate + 'deg)';
+            var transform = 'translate(0px, 0px) scale(' + this.currentScaleX + ', ' + this.currentScaleY + ') skew(' + this.currentSkewX + 'deg, ' + this.currentSkewY + 'deg) rotate(' + this.currentRotate + 'deg)';
             this.element.style.transform = transform;
         },
         
@@ -823,12 +815,10 @@
 
     // ============================================================
     // MODULE 3: COMBO WINDOW (Genie + Wobbly)
-    // Structure: Genie sur wrapper, Wobbly sur contenu interne
     // ============================================================
     
-    function ComboWindow(wrapperElement, contentElement, button, options) {
-        this.wrapper = wrapperElement;
-        this.content = contentElement;
+    function ComboWindow(element, button, options) {
+        this.element = element;
         this.button = button;
         
         this.genieOptions = {
@@ -856,8 +846,8 @@
         _init: function() {
             var self = this;
             
-            this.genie = new GenieEffect(this.wrapper, this.button, this.genieOptions);
-            this.wobbly = new WobblyWindow(this.wrapper, this.content, this.wobblyOptions);
+            this.genie = new GenieEffect(this.element, this.button, this.genieOptions);
+            this.wobbly = new WobblyWindow(this.element, this.wobblyOptions);
             
             // Desactiver le wobble si option desactivee
             if (!this.wobblyOptions.wobblyEnabled) {
@@ -889,12 +879,6 @@
         
         restore: function() {
             if (this.genie) this.genie.restore();
-            // Reinitialiser le wobble apres restauration
-            setTimeout(function() {
-                if (this.wobbly && this.wobblyOptions.wobblyEnabled) {
-                    this.wobbly.resetTransform();
-                }
-            }.bind(this), 50);
         },
         
         bringToFront: function() {
