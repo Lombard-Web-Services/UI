@@ -1,4 +1,5 @@
 # UI-Library
+![UI-Library Demo](UI-library.gif)
 
 > Bibliothèque JavaScript d'effets UX/UI avancés — Fenêtres magiques, déformations élastiques et glassmorphism
 
@@ -13,233 +14,322 @@
   <strong>🪔 Lampe Magique</strong> · <strong>🌀 Wobbly Windows</strong> · <strong>🔮 Combo Window</strong>
 </p>
 
----
 
-## Présentation
-
-**UI-Library** est une bibliothèque JavaScript légère qui implémente des effets d'interface utilisateur modernes et fluides. Elle s'inspire des principes du livre *"Secrets of the JavaScript Ninja"* pour offrir une architecture propre basée sur les **prototypes**, les **classes constructeurs** et les **patterns de conception avancés**.
-
-Cette bibliothèque propose trois modules principaux :
-
-| Module | Description | Inspiration |
-|--------|-------------|-------------|
-| 🪔 **Lampe Magique** | Effet de minimisation/restauration directionnel avec déformation symétrique | Génie des lampes magiques (macOS Genie Effect) |
-| 🌀 **Wobbly Windows** | Déformation élastique liquide au drag & drop | Compiz Fusion (Linux) |
-| 🔮 **Combo Window** | Combinaison des deux effets sur une même fenêtre | — |
+**Demo en ligne :** [https://lombard-web-services.github.io/UI/demo-ui.html](https://lombard-web-services.github.io/UI/demo-ui.html)
 
 ---
 
-## Démonstration en ligne
+## Presentation
 
-Ouvrez `demo-ui.html` dans un navigateur moderne pour explorer tous les effets avec :
+UI-Library est une bibliotheque JavaScript modulaire qui reproduit deux effets de fenetres emblematiques des bureaux graphiques modernes : l'effet Genie de macOS et l'effet Wobbly Windows de Compiz. Ces effets sont implementes en pur JavaScript, sans dependance externe, et peuvent etre integres dans n'importe quel projet Web.
 
-- Navigation par onglets entre les trois modules
-- Panneaux de contrôle interactifs en temps réel
-- Thème clair/sombre global
-- Drag & drop fluide sur toutes les fenêtres
+Le projet se compose de trois modules independants qui peuvent etre utilises seuls ou combines :
+
+- **GenieEffect** : Effet de minimisation/restauration directionnel avec deformation elastique
+- **WobblyWindow** : Effet de deformation physique a la traction (style Compiz)
+- **ComboWindow** : Combinaison des deux effets precedents
+
+## Table des matieres
+
+- [Installation](#installation)
+- [Modules](#modules)
+  - [GenieEffect](#genieeffect)
+  - [WobblyWindow](#wobblywindow)
+  - [ComboWindow](#combowindow)
+- [API de reference](#api-de-reference)
+- [Demonstration](#demonstration)
+- [Structure du projet](#structure-du-projet)
+- [Credits](#credits)
+- [Licence](#licence)
 
 ---
 
 ## Installation
 
-Incluez simplement les fichiers dans votre page HTML :
+### Inclusion directe
+
+Telechargez les fichiers `UI-Library.js` et `UI-Library.css`, puis incluez-les dans votre page HTML :
 
 ```html
 <link rel="stylesheet" href="UI-Library.css">
 <script src="UI-Library.js"></script>
 ```
 
-> **Prérequis** : Navigateur moderne supportant `CSS backdrop-filter`, `ES6+` et `requestAnimationFrame`.
+La bibliotheque s'auto-instancie dans l'objet global `UILibrary`.
 
----
+### Verification
 
-## Lampe Magique (Genie Effect)
-
-Animation de minimisation/restauration où la fenêtre semble être aspirée vers le bouton, puis réapparaît depuis le bord opposé.
-
-### Caractéristiques
-
-- 🧭 **Directionnel** — La fenêtre sort du bord opposé du bouton
-- 🪞 **Déformation symétrique** — Skew dynamique selon la direction
-- ✂️ **Clip-path progressif** — Effet de pincement réaliste
-- 🖱️ **Drag & drop fluide** — Fenêtre et bouton déplaçables
-- 🎛️ **Paramètres configurables** — Durée, intensité, glassmorphism
-
-### Utilisation
+Apres inclusion, verifiez que la bibliotheque est chargee :
 
 ```javascript
-const genie = new UILibrary.GenieEffect(windowElement, buttonElement, {
-    duration: 700,        // Durée de l'animation (ms)
-    skewIntensity: 50,    // Intensité de la déformation (°)
-    glassEnabled: true    // Activer l'effet glassmorphism
-});
-
-// Actions
-genie.minimize();   // Minimiser vers le bouton
-genie.restore();    // Restaurer depuis le bord opposé
-genie.toggle();     // Basculer l'état
-
-// Mise à jour des paramètres
-genie.updateOptions({
-    duration: 1000,
-    skewIntensity: 75,
-    glassEnabled: false
-});
+console.log(UILibrary.version); // "1.0.0"
 ```
 
 ---
 
-## Wobbly Windows (Compiz Style)
-
-Effet élastique liquide inspiré de Compiz Fusion : la fenêtre elle-même se déforme comme de la gelée pendant le déplacement.
-
-### Caractéristiques
-
-- 💧 **Physique de ressort amortie** — Retour élastique naturel
-- 🔄 **Déformation skew + rotation** — Réaction à la vélocité du mouvement
-- 📐 **Scale directionnel** — Étirement dans la direction du drag
-- 🪟 **Multi-fenêtres** — Gestion du z-index et focus
-- 🌓 **Thèmes clair/sombre** — Basculage dynamique
-- 🎛️ **Paramètres physiques ajustables** — Ressort, amortissement, force
-
-### Utilisation
-
-```javascript
-const wobbly = new UILibrary.WobblyWindow(windowElement, {
-    intensity: 1.2,     // Intensité globale du wobble
-    springSpeed: 0.14,  // Vitesse de rappel élastique
-    damping: 0.89,      // Amortissement
-    dragForce: 2.0      // Force de traction
-});
-
-// Actions
-wobbly.bringToFront();      // Mettre au premier plan
-wobbly.toggleMaximize();    // Basculer normal/maximisé
-wobbly.resetTransform();    // Réinitialiser la déformation
-
-// Mise à jour des paramètres
-wobbly.updateParams({
-    intensity: 1.5,
-    springSpeed: 0.20,
-    damping: 0.85
-});
-```
-
----
-
-## Combo Window
-
-Combine les deux effets précédents sur une même fenêtre : minimisation magique **et** déformation élastique au déplacement.
-
-### Utilisation
-
-```javascript
-const combo = new UILibrary.ComboWindow(windowElement, buttonElement, {
-    // Options Genie
-    duration: 700,
-    skewIntensity: 50,
-    glassEnabled: true,
-    // Options Wobbly
-    wobblyIntensity: 1.2,
-    springSpeed: 0.14,
-    damping: 0.89,
-    dragForce: 2.0,
-    wobblyEnabled: true
-});
-
-// Actions
-combo.minimize();
-combo.restore();
-combo.toggle();
-combo.toggleMaximize();
-
-// Mise à jour séparée des options
-combo.updateGenieOptions({ duration: 1000 });
-combo.updateWobblyOptions({ intensity: 1.5, wobblyEnabled: false });
-```
-
----
-
-## Architecture
-
-La bibliothèque utilise une approche orientée **prototype** et **classes constructeurs** :
-
-| Composant | Rôle |
-|-----------|------|
-| `DragManager` | Gestionnaire de drag & drop réutilisable avec contraintes de bordure |
-| `PositionDetector` | Singleton de détection de direction relative (bouton ↔ fenêtre) |
-| `GenieAnimator` | Générateur dynamique de keyframes CSS pour les animations |
-| `GenieEffect` | Classe principale de l'effet lampe magique |
-| `WobblyWindow` | Classe de la fenêtre à effet élastique avec boucle physique |
-| `ComboWindow` | Agrégation de GenieEffect + WobblyWindow avec synchronisation |
-
----
-
-## 📁 Structure des fichiers
-
-```
-UI/
-├── UI-Library.js          # Bibliothèque principale (modules Genie + Wobbly + Combo)
-├── UI-Library.css         # Styles partagés (fenêtres, glassmorphism, thèmes)
-├── demo-ui.html           # Démonstration complète des 3 modules
-├── lampe_magique.html     # Version standalone de la Lampe Magique
-└── windows_wobble.html    # Version standalone des Wobbly Windows
-```
-
----
-
-## Paramètres disponibles
+## Modules
 
 ### GenieEffect
 
-| Paramètre | Type | Défaut | Description |
-|-----------|------|--------|-------------|
-| `duration` | `number` | `700` | Durée de l'animation en millisecondes |
-| `skewIntensity` | `number` | `50` | Intensité de la déformation skew (degrés) |
-| `glassEnabled` | `boolean` | `true` | Active l'effet glassmorphism |
+Reproduit l'effet Genie de macOS : la fenetre se deforme et se retracte vers un bouton de controle avec une animation directionnelle. La restauration fait emerger la fenetre depuis le bord oppose du bouton.
+
+#### Utilisation de base
+
+```html
+<div id="maFenetre" class="window">
+    <div class="title-bar">
+        <div class="window-buttons">
+            <div class="window-btn close"></div>
+            <div class="window-btn minimize-btn"></div>
+            <div class="window-btn maximize"></div>
+        </div>
+        <div class="title-text">Ma Fenetre</div>
+    </div>
+    <div class="content">
+        <p>Contenu de la fenetre</p>
+    </div>
+</div>
+
+<button id="monBouton" class="control-btn">Minimiser</button>
+```
+
+```javascript
+var genie = new UILibrary.GenieEffect(
+    document.getElementById('maFenetre'),
+    document.getElementById('monBouton'),
+    {
+        duration: 700,
+        skewIntensity: 50,
+        glassEnabled: true
+    }
+);
+```
+
+#### Options
+
+| Option | Type | Defaut | Description |
+|--------|------|--------|-------------|
+| `duration` | Number | 700 | Duree de l'animation en millisecondes |
+| `skewIntensity` | Number | 50 | Intensite de la deformation en degres |
+| `glassEnabled` | Boolean | true | Active l'effet glassmorphism |
+
+#### Methodes
+
+| Methode | Description |
+|---------|-------------|
+| `minimize()` | Minimise la fenetre vers le bouton |
+| `restore()` | Restaure la fenetre depuis le bord oppose du bouton |
+| `toggle()` | Bascule entre minimise et restaure |
+| `updateOptions(options)` | Met a jour les options en temps reel |
+| `destroy()` | Detruit l'instance et nettoie le DOM |
+
+#### Fonctionnalites
+
+- **Direction automatique** : La direction de l'animation est calculee automatiquement en fonction de la position relative du bouton et de la fenetre (haut, bas, gauche, droite).
+- **Deformation symetrique** : La fenetre se pince et se deforme de maniere symetrique pendant l'animation.
+- **Drag and drop** : La fenetre et le bouton sont deplacables par glisser-deposer.
+- **Sauvegarde de position** : La position de la fenetre est conservee lors de la minimisation et restauree a l'identique.
+
+---
 
 ### WobblyWindow
 
-| Paramètre | Type | Défaut | Description |
-|-----------|------|--------|-------------|
-| `intensity` | `number` | `1.2` | Intensité globale de la déformation |
-| `springSpeed` | `number` | `0.14` | Vitesse de rappel vers la forme initiale |
-| `damping` | `number` | `0.89` | Coefficient d'amortissement (0–1) |
-| `dragForce` | `number` | `2.0` | Force de réaction au mouvement |
+Reproduit l'effet Wobbly Windows de Compiz : la fenetre entiere se deforme elastiquement lorsqu'on la deplace, comme de la gelatine. Un moteur physique a ressort assure le retour a la forme initiale.
+
+#### Utilisation de base
+
+```html
+<div class="wobbly-window" id="fenetre1">
+    <div class="window-surface">
+        <div class="window-titlebar" data-drag-handle>
+            <span class="window-title">Titre de la fenetre</span>
+            <div class="window-controls">
+                <button class="window-btn btn-close" data-action="close">x</button>
+                <button class="window-btn btn-minimize" data-action="minimize">-</button>
+                <button class="window-btn btn-maximize" data-action="maximize">[]</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <p>Contenu de la fenetre</p>
+        </div>
+    </div>
+</div>
+```
+
+```javascript
+var wobbly = new UILibrary.WobblyWindow(
+    document.getElementById('fenetre1'),
+    {
+        intensity: 1.2,
+        springSpeed: 0.14,
+        damping: 0.89,
+        dragForce: 2.0
+    }
+);
+```
+
+#### Options
+
+| Option | Type | Defaut | Description |
+|--------|------|--------|-------------|
+| `intensity` | Number | 1.2 | Intensite globale de la deformation |
+| `springSpeed` | Number | 0.14 | Vitesse de rappel elastique |
+| `damping` | Number | 0.89 | Coefficient d'amortissement |
+| `dragForce` | Number | 2.0 | Force de traction lors du deplacement |
+| `maxSkew` | Number | 14 | Inclinaison maximale en degres |
+| `maxScale` | Number | 0.12 | Etirement maximal |
+
+#### Methodes
+
+| Methode | Description |
+|---------|-------------|
+| `bringToFront()` | Place la fenetre au premier plan |
+| `toggleMaximize()` | Bascule entre taille normale et maximise |
+| `updateParams(params)` | Met a jour les parametres physiques |
+| `resetTransform()` | Reinitialise la transformation |
+| `setActive(boolean)` | Active ou desactive l'effet wobbly |
+
+#### Fonctionnalites
+
+- **Deformation physique** : Scale, skew et rotation calcules en fonction de la vitesse de deplacement.
+- **Moteur a ressort** : Retour elastique avec amortissement physique.
+- **Ondulation en temps reel** : Effet de vague supplementaire lors des deplacements rapides.
+- **Gestion du focus** : Clic pour mettre au premier plan.
+- **Maximisation** : Support du mode plein ecran avec animation.
 
 ---
 
-## Compatibilité
+### ComboWindow
 
-| Navigateur | Support |
-|------------|---------|
-| Chrome | ✅ Recommandé |
-| Firefox | ✅ |
-| Safari | ✅ |
-| Edge | ✅ |
+Combine les effets Genie et Wobbly dans une seule fenetre. L'effet Wobbly est desactive pendant les animations Genie pour eviter les conflits, puis reactive automatiquement.
+
+#### Utilisation de base
+
+```javascript
+var combo = new UILibrary.ComboWindow(
+    document.getElementById('maFenetreCombo'),
+    document.getElementById('monBoutonCombo'),
+    {
+        // Options Genie
+        duration: 700,
+        skewIntensity: 50,
+        glassEnabled: true,
+        // Options Wobbly
+        wobblyIntensity: 1.2,
+        springSpeed: 0.14,
+        damping: 0.89,
+        dragForce: 2.0,
+        wobblyEnabled: true
+    }
+);
+```
+
+#### Methodes
+
+| Methode | Description |
+|---------|-------------|
+| `minimize()` | Minimise avec effet Genie |
+| `restore()` | Restaure avec effet Genie |
+| `toggle()` | Bascule minimise/restaure |
+| `toggleMaximize()` | Bascule plein ecran |
+| `bringToFront()` | Met au premier plan |
+| `updateGenieOptions(options)` | Met a jour les options Genie |
+| `updateWobblyOptions(options)` | Met a jour les options Wobbly |
+| `reposition()` | Recalcule la position |
+| `isWobblyEnabled()` | Retourne l'etat de l'effet Wobbly |
 
 ---
 
-## 📄 Licence
+## API de reference
 
-MIT License — © Thibaut Lombard
+### DragManager (interne)
 
-Usage libre pour projets personnels et commerciaux.
+Gestionnaire de drag and drop fluide utilise par tous les modules.
+
+| Methode | Description |
+|---------|-------------|
+| `setEnabled(boolean)` | Active ou desactive le drag |
+| `isDragging()` | Retourne l'etat du drag |
+
+### PositionDetector (interne)
+
+Utilitaire de detection de direction pour les animations.
+
+| Methode | Description |
+|---------|-------------|
+| `getDirection(buttonRect, windowRect)` | Calcule la direction relative |
+| `getClipPath(direction, progress)` | Genere le clip-path de deformation |
+| `getStartPosition(buttonRect, targetRect, direction)` | Calcule la position de depart |
+| `getSkew(direction, intensity, progress)` | Calcule l'inclinaison |
+
+---
+
+## Demonstration
+
+Le projet inclut trois pages de demonstration :
+
+| Fichier | Description |
+|---------|-------------|
+| `lampe_magique.html` | Demonstration isolee de l'effet Genie |
+| `windows_wobble.html` | Demonstration isolee de l'effet Wobbly |
+| `demo-ui.html` | Demonstration combinee avec navigation par onglets |
+
+Ouvrez `demo-ui.html` dans un navigateur pour tester l'ensemble des fonctionnalites. La page propose :
+
+- Navigation entre les trois sections (Lampe Magique, Wobbly Windows, Combo)
+- Panneaux de controle en temps reel pour ajuster les parametres
+- Basculement entre theme sombre et theme clair
+- Deplacement libre des fenetres et des boutons de controle
+
+**Demo en ligne :** [https://lombard-web-services.github.io/UI/demo-ui.html](https://lombard-web-services.github.io/UI/demo-ui.html)
+
+---
+
+## Structure du projet
+
+```
+ui-library/
+|-- UI-Library.js      # Bibliotheque principale (modules + moteur physique)
+|-- UI-Library.css     # Styles de base (glassmorphism, themes, controles)
+|-- demo-ui.html       # Demonstration combinee avec navigation
+|-- lampe_magique.html # Demonstration Genie Effect autonome
+|-- windows_wobble.html# Demonstration Wobbly Windows autonome
+```
+
+### Dependances
+
+Aucune. UI-Library est ecrit en pur JavaScript (ES5) et CSS3, compatible avec tous les navigateurs modernes.
+
+### Compatibilite
+
+- Chrome / Edge / Opera (recommande)
+- Firefox
+- Safari
+- Navigateurs mobiles (avec limitations sur le drag)
 
 ---
 
 ## Credits
 
 - **Moult-AI Enterprise** — Orchestration
-- **Qwen-intl** — Assistance GH & Bug fixes
-- **DeepSeek** — Assistance développement
-- **Kimi** — Assistance développement
-- **Grok** — Assistance développement
+- **Qwen-intl** — Assistance GitHub et correction de bugs
+- **DeepSeek** — Assistance developpement
+- **Kimi** — Assistance developpement
+- **Grok** — Assistance developpement
 
-> Inspiré par les concepts avancés de manipulation DOM et d'animations présentés dans la littérature JavaScript spécialisée.
+Inspire par les concepts avances de manipulation DOM et d'animations presentes dans la litterature JavaScript specialisee.
 
 ---
 
-<p align="center">
-  <sub>Conçu avec 🧞 et 🍮 par <strong>Thibaut Lombard</strong></sub>
-</p>
+## Licence
+
+Ce projet est distribue sous licence libre. Voir le fichier de licence pour plus de details.
+
+---
+
+## Auteur
+
+**Thibaut Lombard**
+
+- Version : 1.0.0
+- Date : 2026
