@@ -824,7 +824,8 @@
             intensity: (options && options.wobblyIntensity) || 1.2,
             springSpeed: (options && options.springSpeed) || 0.14,
             damping: (options && options.damping) || 0.89,
-            dragForce: (options && options.dragForce) || 2.0
+            dragForce: (options && options.dragForce) || 2.0,
+            wobblyEnabled: (options && options.wobblyEnabled !== undefined) ? options.wobblyEnabled : true
         };
         
         this.genie = null;
@@ -844,7 +845,14 @@
             
             this._originalUpdatePhysics = this.wobbly._updatePhysics.bind(this.wobbly);
             
+            // Remplacer la méthode updatePhysics pour qu'elle utilise l'option wobblyEnabled
             this.wobbly._updatePhysics = function() {
+                if (!self.wobblyOptions.wobblyEnabled) {
+                    var transform = 'translate(0px, 0px) scale(1, 1) skew(0deg, 0deg) rotate(0deg)';
+                    this.element.style.transform = transform;
+                    return;
+                }
+                
                 var spring = this.options.springSpeed;
                 var damping = this.options.damping;
                 
@@ -883,6 +891,9 @@
         },
         
         updateWobblyOptions: function(options) {
+            if (options.wobblyEnabled !== undefined) {
+                this.wobblyOptions.wobblyEnabled = options.wobblyEnabled;
+            }
             if (this.wobbly) this.wobbly.updateParams(options);
         },
         
@@ -904,6 +915,10 @@
         
         toggleMaximize: function() {
             if (this.wobbly) this.wobbly.toggleMaximize();
+        },
+        
+        isWobblyEnabled: function() {
+            return this.wobblyOptions.wobblyEnabled;
         }
     };
 
