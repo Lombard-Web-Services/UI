@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://lombard-web-services.github.io/UI/demo-ui.html">
-    <img src="https://github.com/Lombard-Web-Services/UI/UI-library.gif" alt="UI-Library Demo">
+    <img src="https://github.com/Lombard-Web-Services/UI/blob/main/UI-library.gif?raw=true" alt="UI-Library Demo">
   </a>
 </p>
 
