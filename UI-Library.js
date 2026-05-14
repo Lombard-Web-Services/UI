@@ -862,6 +862,8 @@
         this.genie = null;
         this.wobbly = null;
         this.isGenieAnimating = false;
+        this._savedLeft = null;
+        this._savedTop = null;
         
         this._init();
     }
@@ -873,9 +875,12 @@
             var left = (window.innerWidth - this.element.offsetWidth) / 2;
             var top = (window.innerHeight - this.element.offsetHeight) / 2;
             
+            this.element.style.position = 'absolute';
             this.element.style.left = left + 'px';
             this.element.style.top = top + 'px';
-            this.element.style.position = 'absolute';
+            
+            // Nettoyer tout transform CSS conflictuel
+            this.element.style.transform = '';
             
             if (this.genie) {
                 this.genie.savedPosition = {
@@ -889,13 +894,33 @@
             return { left: left, top: top };
         },
         
+        _saveCurrentPosition: function() {
+            var rect = this.element.getBoundingClientRect();
+            this._savedLeft = rect.left;
+            this._savedTop = rect.top;
+            return { left: this._savedLeft, top: this._savedTop };
+        },
+        
+        _restorePosition: function() {
+            if (this._savedLeft !== null && this._savedTop !== null) {
+                this.element.style.left = this._savedLeft + 'px';
+                this.element.style.top = this._savedTop + 'px';
+                this.element.style.transform = '';
+                this._savedLeft = null;
+                this._savedTop = null;
+            }
+        },
+        
         _init: function() {
             var self = this;
             
             this.genie = new GenieEffect(this.element, this.button, this.genieOptions);
             this.wobbly = new WobblyWindow(this.element, this.wobblyOptions);
             
-            // Initialiser la position correctement (sans transform CSS)
+            // Nettoyer le transform CSS initial
+            this.element.style.transform = '';
+            
+            // Initialiser la position correctement
             var initialPos = this._initPosition();
             
             this.genie.savedPosition = {
@@ -914,6 +939,7 @@
             
             this.element._onGenieAnimationEnd = function() {
                 self.isGenieAnimating = false;
+                self._restorePosition();
                 if (self.wobbly && self.wobblyOptions.wobblyEnabled) {
                     self.wobbly.setActive(true);
                     setTimeout(function() {
@@ -926,6 +952,7 @@
             
             this.genie.minimize = function() {
                 self.isGenieAnimating = true;
+                self._saveCurrentPosition();
                 if (self.wobbly) {
                     self.wobbly.setActive(false);
                     self.wobbly.resetTransform();
@@ -935,6 +962,7 @@
             
             this.genie.restore = function() {
                 self.isGenieAnimating = true;
+                self._saveCurrentPosition();
                 if (self.wobbly) {
                     self.wobbly.setActive(false);
                     self.wobbly.resetTransform();
@@ -961,6 +989,7 @@
                     var top = (window.innerHeight - self.element.offsetHeight) / 2;
                     self.element.style.left = left + 'px';
                     self.element.style.top = top + 'px';
+                    self.element.style.transform = '';
                     if (self.genie) {
                         self.genie.savedPosition = {
                             left: left, top: top,
@@ -997,7 +1026,6 @@
             return this.wobblyOptions.wobblyEnabled;
         }
     };
-
     // ============================================================
     // EXPORTATION
     // ============================================================
