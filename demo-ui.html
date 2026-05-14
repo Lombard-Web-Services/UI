@@ -182,7 +182,6 @@
                         </ul>
                     </div>
                 </div>
-                <div class="wobbly-content" id="comboWobblyContent"></div>
             </div>
         </div>
         
@@ -287,8 +286,7 @@
         var wobblyElements = document.querySelectorAll('.wobbly-window');
         
         wobblyElements.forEach(function(el, idx) {
-            var surface = el.querySelector('.window-surface');
-            var wobbly = new UILibrary.WobblyWindow(el, surface, {
+            var wobbly = new UILibrary.WobblyWindow(el, {
                 intensity: 1.2, springSpeed: 0.14, damping: 0.89, dragForce: 2.0
             });
             wobblyWindows.push(wobbly);
@@ -367,15 +365,8 @@
         var comboMinimizeTrigger = document.getElementById('comboMinimizeTrigger');
         var comboMaximizeTrigger = document.getElementById('comboMaximizeTrigger');
         var comboToggle = document.getElementById('comboWobblyToggle');
-        var comboContent = document.getElementById('comboWobblyContent');
         
-        // Transferer le contenu existant vers le wrapper wobbly-content
-        var originalContent = comboWindow.querySelector('.window-surface');
-        if (originalContent && comboContent) {
-            comboContent.appendChild(originalContent);
-        }
-        
-        var combo = new UILibrary.ComboWindow(comboWindow, comboContent, comboBtn, {
+        var combo = new UILibrary.ComboWindow(comboWindow, comboBtn, {
             duration: 700, skewIntensity: 50, glassEnabled: true,
             wobblyIntensity: 1.2, springSpeed: 0.14, damping: 0.89, dragForce: 2.0,
             wobblyEnabled: true
@@ -440,7 +431,7 @@
         }
         
         // ============================================================
-        // NAVIGATION
+        // NAVIGATION - Cache le bouton theme sur Wobbly
         // ============================================================
         
         var navBtns = document.querySelectorAll('.nav-btn');
@@ -460,10 +451,13 @@
                 
                 if (section === 'magic') {
                     magicSection.classList.add('active');
+                    themeBtn.style.display = 'block';
                 } else if (section === 'wobbly') {
                     wobblySection.classList.add('active');
+                    themeBtn.style.display = 'none';
                 } else if (section === 'combo') {
                     comboSec.classList.add('active');
+                    themeBtn.style.display = 'block';
                 }
             });
         });
