@@ -422,9 +422,6 @@ body.light-theme .control-group label {
 /* Combo Window */
 .combo-window {
     position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
     width: 560px;
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(20px);
