@@ -590,6 +590,8 @@
             this.normalTop = rect.top;
             this.normalWidth = this.element.offsetWidth;
             this.normalHeight = this.element.offsetHeight;
+            this.windowLeft = rect.left;
+            this.windowTop = rect.top;
         },
         
         _bindButtons: function() {
@@ -868,14 +870,13 @@
         constructor: ComboWindow,
         
         _initPosition: function() {
-            // Centrer la fenêtre au chargement, sans transform CSS
             var left = (window.innerWidth - this.element.offsetWidth) / 2;
             var top = (window.innerHeight - this.element.offsetHeight) / 2;
             
             this.element.style.left = left + 'px';
             this.element.style.top = top + 'px';
+            this.element.style.position = 'absolute';
             
-            // Sauvegarder pour le GenieEffect
             if (this.genie) {
                 this.genie.savedPosition = {
                     left: left,
@@ -897,7 +898,6 @@
             // Initialiser la position correctement (sans transform CSS)
             var initialPos = this._initPosition();
             
-            // Mettre à jour la position sauvegardée du genie
             this.genie.savedPosition = {
                 left: initialPos.left,
                 top: initialPos.top,
@@ -916,7 +916,6 @@
                 self.isGenieAnimating = false;
                 if (self.wobbly && self.wobblyOptions.wobblyEnabled) {
                     self.wobbly.setActive(true);
-                    // Forcer la réinitialisation du transform après l'animation
                     setTimeout(function() {
                         if (self.wobbly && self.wobblyOptions.wobblyEnabled) {
                             self.wobbly.resetTransform();
@@ -943,7 +942,6 @@
                 originalRestore();
             };
             
-            // Bloquer le drag du wobbly pendant l'animation genie
             if (this.wobbly) {
                 var originalWobblyMouseDown = this.wobbly._onMouseDown.bind(this.wobbly);
                 this.wobbly._onMouseDown = function(e) {
@@ -956,7 +954,7 @@
                 };
             }
             
-            // Réinitialiser la position après redimensionnement
+            // Redimensionnement
             window.addEventListener('resize', function() {
                 if (!self.genie.isMinimized && !self.genie.isAnimating) {
                     var left = (window.innerWidth - self.element.offsetWidth) / 2;
@@ -999,8 +997,6 @@
             return this.wobblyOptions.wobblyEnabled;
         }
     };
-
-
 
     // ============================================================
     // EXPORTATION
