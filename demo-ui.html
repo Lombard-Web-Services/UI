@@ -21,7 +21,7 @@
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.4s ease, visibility 0.4s ease;
-            overflow: auto;
+            overflow: hidden;
         }
         
         .demo-section.active {
@@ -33,12 +33,20 @@
             text-align: center;
             padding: 20px;
             color: white;
-            position: relative;
-            z-index: 10;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 20;
+            pointer-events: none;
         }
         
-        body.light-theme .section-header {
-            color: #e0e0e0;
+        body.light-theme .section-header h1 {
+            color: #1a1a2e;
+        }
+        
+        body.light-theme .section-header p {
+            color: #2a2a4e;
         }
         
         .section-header h1 {
@@ -73,7 +81,7 @@
         }
         
         body.light-theme .nav-btn {
-            color: #e0e0e0;
+            color: #1a1a2e;
         }
         
         .nav-btn.active {
@@ -112,25 +120,27 @@
         }
         
         .wobbly-container {
-            position: relative;
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: calc(100vh - 100px);
-            min-height: 500px;
+            height: 100%;
         }
         
         .combo-container {
-            position: relative;
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: calc(100vh - 100px);
-            min-height: 500px;
+            height: 100%;
         }
         
         .wobbly-window {
             position: absolute;
         }
         
-        .wobbly-window[data-win-id="0"] { left: 60px; top: 60px; }
-        .wobbly-window[data-win-id="1"] { left: 520px; top: 160px; width: 460px; min-height: 380px; }
+        .wobbly-window[data-win-id="0"] { left: 60px; top: 80px; }
+        .wobbly-window[data-win-id="1"] { left: 520px; top: 180px; width: 460px; min-height: 380px; }
         .wobbly-window[data-win-id="2"] { left: 300px; top: 480px; width: 440px; min-height: 340px; }
         
         .combo-window {
@@ -141,32 +151,28 @@
             width: 560px;
         }
         
-        /* Bouton theme global */
-        .global-theme-btn {
-            position: fixed;
-            top: 20px;
-            right: 200px;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-            border: none;
-            padding: 8px 16px;
-            border-radius: 40px;
-            color: white;
-            cursor: pointer;
-            z-index: 1000;
-            font-weight: 600;
-            font-size: 12px;
+        /* Cache le bouton lampe magique sur les autres sections */
+        .demo-section:not(.active) .control-btn:not(#comboActionBtn) {
+            display: none;
         }
         
-        body.light-theme .global-theme-btn {
-            background: rgba(0, 0, 0, 0.2);
-            color: #1a1a2e;
+        #magicSection .control-btn {
+            display: block;
+        }
+        
+        #wobblySection .control-btn,
+        #comboSection .control-btn:not(#comboActionBtn) {
+            display: none;
+        }
+        
+        #comboSection #comboActionBtn {
+            display: block;
         }
     </style>
 </head>
 <body>
 
-<button class="global-theme-btn" id="globalThemeBtn">🌓 Theme Clair/Sombre</button>
+<button class="global-theme-btn" id="globalThemeBtn">🌓 Theme Clair</button>
 
 <div class="demo-container">
     <!-- Section Lampe Magique -->
@@ -417,9 +423,12 @@
             }
         }
         
-        document.getElementById('globalThemeBtn').addEventListener('click', function() {
-            setTheme(!isDark);
-        });
+        var themeBtn = document.getElementById('globalThemeBtn');
+        if (themeBtn) {
+            themeBtn.addEventListener('click', function() {
+                setTheme(!isDark);
+            });
+        }
         
         // ============================================================
         // LAMPE MAGIQUE
@@ -456,7 +465,8 @@
         // ============================================================
         
         var wobblyWindows = [];
-        document.querySelectorAll('.wobbly-window').forEach(function(el, idx) {
+        var wobblyElements = document.querySelectorAll('.wobbly-window');
+        wobblyElements.forEach(function(el, idx) {
             wobblyWindows.push(new UILibrary.WobblyWindow(el, {
                 intensity: 1.2, springSpeed: 0.14, damping: 0.89, dragForce: 2.0
             }));
@@ -505,22 +515,29 @@
             applyWobblyToActive();
         });
         
-        document.getElementById('windowSelector').addEventListener('change', function(e) {
-            activeWindowIdx = parseInt(e.target.value);
-            var names = ['Fenetre 1', 'Fenetre 2', 'Fenetre 3'];
-            document.getElementById('activeWinName').innerText = names[activeWindowIdx];
-            updateWobblyUI();
-            if (wobblyWindows[activeWindowIdx]) wobblyWindows[activeWindowIdx].bringToFront();
-        });
+        var selector = document.getElementById('windowSelector');
+        if (selector) {
+            selector.addEventListener('change', function(e) {
+                activeWindowIdx = parseInt(e.target.value);
+                var names = ['Fenetre 1', 'Fenetre 2', 'Fenetre 3'];
+                var activeNameSpan = document.getElementById('activeWinName');
+                if (activeNameSpan) activeNameSpan.innerText = names[activeWindowIdx];
+                updateWobblyUI();
+                if (wobblyWindows[activeWindowIdx]) wobblyWindows[activeWindowIdx].bringToFront();
+            });
+        }
         
-        document.getElementById('resetParamsBtn').addEventListener('click', function() {
-            document.getElementById('wobbleIntensity').value = '1.2';
-            document.getElementById('springSpeed').value = '0.14';
-            document.getElementById('wobbleFactor').value = '0.89';
-            document.getElementById('dragForce').value = '2.0';
-            updateWobblyUI();
-            applyWobblyToActive();
-        });
+        var resetBtn = document.getElementById('resetParamsBtn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function() {
+                document.getElementById('wobbleIntensity').value = '1.2';
+                document.getElementById('springSpeed').value = '0.14';
+                document.getElementById('wobbleFactor').value = '0.89';
+                document.getElementById('dragForce').value = '2.0';
+                updateWobblyUI();
+                applyWobblyToActive();
+            });
+        }
         
         updateWobblyUI();
         if (wobblyWindows[0]) wobblyWindows[0].bringToFront();
