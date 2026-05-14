@@ -864,6 +864,7 @@
         this.isGenieAnimating = false;
         this._savedLeft = null;
         this._savedTop = null;
+        this._userMoved = false;
         
         this._init();
     }
@@ -878,6 +879,32 @@
             } else {
                 this.element.style.backdropFilter = 'none';
                 this.element.style.background = 'rgba(0, 0, 0, 0.85)';
+            }
+        },
+        
+        reposition: function() {
+            // Ne repositionner que si l'utilisateur n'a pas déplacé la fenêtre
+            if (!this._userMoved) {
+                var left = (window.innerWidth - this.element.offsetWidth) / 2;
+                var top = (window.innerHeight - this.element.offsetHeight) / 2;
+                
+                this.element.style.left = left + 'px';
+                this.element.style.top = top + 'px';
+                this.element.style.transform = '';
+                
+                if (this.genie) {
+                    this.genie.savedPosition = {
+                        left: left,
+                        top: top,
+                        width: this.element.offsetWidth,
+                        height: this.element.offsetHeight
+                    };
+                }
+            }
+            
+            // Forcer une mise à jour du WobblyWindow
+            if (this.wobbly) {
+                this.wobbly._saveNormalBounds();
             }
         },
         
@@ -947,6 +974,15 @@
                 this.wobbly.setActive(false);
             }
             
+            // Intercepter le drag pour marquer que l'utilisateur a déplacé la fenêtre
+            if (this.wobbly) {
+                var originalWobblyMouseMove = this.wobbly._onMouseMove.bind(this.wobbly);
+                this.wobbly._onMouseMove = function(e) {
+                    self._userMoved = true;
+                    originalWobblyMouseMove(e);
+                };
+            }
+            
             var originalMinimize = this.genie.minimize.bind(this.genie);
             var originalRestore = this.genie.restore.bind(this.genie);
             
@@ -997,7 +1033,7 @@
             
             // Redimensionnement
             window.addEventListener('resize', function() {
-                if (!self.genie.isMinimized && !self.genie.isAnimating) {
+                if (!self.genie.isMinimized && !self.genie.isAnimating && !self._userMoved) {
                     var left = (window.innerWidth - self.element.offsetWidth) / 2;
                     var top = (window.innerHeight - self.element.offsetHeight) / 2;
                     self.element.style.left = left + 'px';
