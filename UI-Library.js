@@ -8,7 +8,7 @@
     'use strict';
 
     // ============================================================
-    // DRAG MANAGER - Gestion du drag & drop fluide (version optimisée)
+    // DRAG MANAGER - Gestion du drag & drop fluide
     // ============================================================
     
     function DragManager(element, options) {
@@ -21,8 +21,6 @@
         this._isDragging = false;
         this._offsetX = 0;
         this._offsetY = 0;
-        this._startLeft = 0;
-        this._startTop = 0;
         
         this._bindEvents();
     }
@@ -45,21 +43,15 @@
         _startDrag: function(clientX, clientY) {
             this._isDragging = true;
             this.element.classList.add('dragging');
-            
             var rect = this.element.getBoundingClientRect();
             this._offsetX = clientX - rect.left;
             this._offsetY = clientY - rect.top;
-            this._startLeft = rect.left;
-            this._startTop = rect.top;
-            
-            // Positionnement initial
             this.element.style.position = 'fixed';
-            this.element.style.left = this._startLeft + 'px';
-            this.element.style.top = this._startTop + 'px';
+            this.element.style.left = rect.left + 'px';
+            this.element.style.top = rect.top + 'px';
             this.element.style.bottom = 'auto';
             this.element.style.right = 'auto';
             this.element.style.willChange = 'left, top';
-            
             this.onStart();
         },
         
@@ -72,18 +64,12 @@
         _drag: function(clientX, clientY) {
             var newLeft = clientX - this._offsetX;
             var newTop = clientY - this._offsetY;
-            
-            // Contraintes de bordure
             var maxX = window.innerWidth - this.element.offsetWidth - 5;
             var maxY = window.innerHeight - this.element.offsetHeight - 5;
-            
             newLeft = Math.max(5, Math.min(newLeft, maxX));
             newTop = Math.max(5, Math.min(newTop, maxY));
-            
-            // Application directe pour fluidité
             this.element.style.left = newLeft + 'px';
             this.element.style.top = newTop + 'px';
-            
             this.onMove(newLeft, newTop);
         },
         
@@ -898,6 +884,12 @@
                 self.isGenieAnimating = false;
                 if (self.wobbly && self.wobblyOptions.wobblyEnabled) {
                     self.wobbly.setActive(true);
+                    // Force reset du transform après l'animation pour éviter le décalage
+                    setTimeout(function() {
+                        if (self.wobbly && self.wobblyOptions.wobblyEnabled) {
+                            self.wobbly.resetTransform();
+                        }
+                    }, 50);
                 }
             };
             
