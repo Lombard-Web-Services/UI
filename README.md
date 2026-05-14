@@ -228,7 +228,7 @@ Usage libre pour projets personnels et commerciaux.
 
 ---
 
-## 🙏 Remerciements
+## Credits
 
 - **Moult-AI Enterprise** — Orchestration
 - **Qwen-intl** — Assistance GH & Bug fixes
