@@ -231,6 +231,7 @@ Usage libre pour projets personnels et commerciaux.
 ## 🙏 Remerciements
 
 - **Moult-AI Enterprise** — Orchestration
+- **Qwen-intl** — Assistance GH & Bug fixes
 - **DeepSeek** — Assistance développement
 - **Kimi** — Assistance développement
 - **Grok** — Assistance développement
