@@ -432,12 +432,6 @@ body.light-theme .control-group label {
     z-index: 10;
 }
 
-/*.combo-window .window-surface {
-    background: transparent;
-    backdrop-filter: none;
-    box-shadow: none;
-}*/
-
 .combo-window .title-bar {
     cursor: grab;
 }
