@@ -410,6 +410,11 @@
                     self.button.classList.add('restore-mode');
                 }
                 if (self.buttonDrag) self.buttonDrag.setEnabled(true);
+                
+                // Signal pour ComboWindow
+                if (self.element._onGenieAnimationEnd) {
+                    self.element._onGenieAnimationEnd();
+                }
             };
             
             this.element.addEventListener('animationend', onEnd, { once: true });
@@ -472,6 +477,11 @@
                 if (self.button) {
                     self.button.innerHTML = '🪔 Minimiser';
                     self.button.classList.remove('restore-mode');
+                }
+                
+                // Signal pour ComboWindow
+                if (self.element._onGenieAnimationEnd) {
+                    self.element._onGenieAnimationEnd();
                 }
             };
             
@@ -543,6 +553,7 @@
         this.rotateVel = 0;
         
         this.animationId = null;
+        this._isWobblyActive = true;
         
         this._init();
     }
@@ -749,6 +760,9 @@
         },
         
         _updatePhysics: function() {
+            // Si le wobble est desactive, ne rien faire
+            if (!this._isWobblyActive) return;
+            
             var spring = this.options.springSpeed;
             var damping = this.options.damping;
             
@@ -810,11 +824,18 @@
             this.scaleVelY = 0;
             this.rotateVel = 0;
             this.element.style.transform = '';
+        },
+        
+        setActive: function(active) {
+            this._isWobblyActive = active;
+            if (!active) {
+                this.resetTransform();
+            }
         }
     };
 
     // ============================================================
-    // MODULE 3: COMBO WINDOW (Genie + Wobbly)
+    // MODULE 3: COMBO WINDOW (Genie + Wobbly) - Version corrigee
     // ============================================================
     
     function ComboWindow(element, button, options) {
@@ -837,6 +858,8 @@
         
         this.genie = null;
         this.wobbly = null;
+        this.isGenieAnimating = false;
+        
         this._init();
     }
     
@@ -849,10 +872,42 @@
             this.genie = new GenieEffect(this.element, this.button, this.genieOptions);
             this.wobbly = new WobblyWindow(this.element, this.wobblyOptions);
             
-            // Desactiver le wobble si option desactivee
+            // Desactiver le wobble initialement si option desactivee
             if (!this.wobblyOptions.wobblyEnabled) {
-                this.wobbly.resetTransform();
+                this.wobbly.setActive(false);
             }
+            
+            // Stocker les methodes originales
+            var originalMinimize = this.genie.minimize.bind(this.genie);
+            var originalRestore = this.genie.restore.bind(this.genie);
+            
+            // Definir le callback de fin d'animation
+            this.element._onGenieAnimationEnd = function() {
+                self.isGenieAnimating = false;
+                if (self.wobbly && self.wobblyOptions.wobblyEnabled) {
+                    self.wobbly.setActive(true);
+                }
+            };
+            
+            // Overrider minimize
+            this.genie.minimize = function() {
+                self.isGenieAnimating = true;
+                if (self.wobbly) {
+                    self.wobbly.setActive(false);
+                    self.wobbly.resetTransform();
+                }
+                originalMinimize();
+            };
+            
+            // Overrider restore
+            this.genie.restore = function() {
+                self.isGenieAnimating = true;
+                if (self.wobbly) {
+                    self.wobbly.setActive(false);
+                    self.wobbly.resetTransform();
+                }
+                originalRestore();
+            };
         },
         
         updateGenieOptions: function(options) {
@@ -860,34 +915,21 @@
         },
         
         updateWobblyOptions: function(options) {
-            if (options.wobblyEnabled !== undefined) {
-                this.wobblyOptions.wobblyEnabled = options.wobblyEnabled;
-                if (!options.wobblyEnabled) {
-                    if (this.wobbly) this.wobbly.resetTransform();
+            if (this.wobbly) {
+                if (options.wobblyEnabled !== undefined) {
+                    this.wobblyOptions.wobblyEnabled = options.wobblyEnabled;
+                    this.wobbly.setActive(options.wobblyEnabled && !this.isGenieAnimating);
+                    if (!options.wobblyEnabled) this.wobbly.resetTransform();
                 }
+                this.wobbly.updateParams(options);
             }
-            if (this.wobbly) this.wobbly.updateParams(options);
         },
         
-        toggle: function() {
-            if (this.genie) this.genie.toggle();
-        },
-        
-        minimize: function() {
-            if (this.genie) this.genie.minimize();
-        },
-        
-        restore: function() {
-            if (this.genie) this.genie.restore();
-        },
-        
-        bringToFront: function() {
-            if (this.wobbly) this.wobbly.bringToFront();
-        },
-        
-        toggleMaximize: function() {
-            if (this.wobbly) this.wobbly.toggleMaximize();
-        },
+        toggle: function() { if (this.genie) this.genie.toggle(); },
+        minimize: function() { if (this.genie) this.genie.minimize(); },
+        restore: function() { if (this.genie) this.genie.restore(); },
+        bringToFront: function() { if (this.wobbly) this.wobbly.bringToFront(); },
+        toggleMaximize: function() { if (this.wobbly) this.wobbly.toggleMaximize(); },
         
         isWobblyEnabled: function() {
             return this.wobblyOptions.wobblyEnabled;
