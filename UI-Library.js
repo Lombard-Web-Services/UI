@@ -860,6 +860,8 @@
         this.genie = null;
         this.wobbly = null;
         this.isGenieAnimating = false;
+        this._savedLeft = null;
+        this._savedTop = null;
         
         this._init();
     }
@@ -873,6 +875,33 @@
             this.genie = new GenieEffect(this.element, this.button, this.genieOptions);
             this.wobbly = new WobblyWindow(this.element, this.wobblyOptions);
             
+            // Sauvegarder la position réelle avant animation
+            var savePosition = function() {
+                var rect = self.element.getBoundingClientRect();
+                self._savedLeft = rect.left;
+                self._savedTop = rect.top;
+            };
+            
+            // Restaurer la position après animation
+            var restorePosition = function() {
+                if (self._savedLeft !== null && self._savedTop !== null) {
+                    self.element.style.left = self._savedLeft + 'px';
+                    self.element.style.top = self._savedTop + 'px';
+                    // Forcer la réinitialisation du transform
+                    if (self.wobbly) {
+                        self.wobbly.setActive(false);
+                        self.wobbly.resetTransform();
+                        setTimeout(function() {
+                            if (self.wobbly && self.wobblyOptions.wobblyEnabled) {
+                                self.wobbly.setActive(true);
+                            }
+                        }, 100);
+                    }
+                    self._savedLeft = null;
+                    self._savedTop = null;
+                }
+            };
+            
             if (!this.wobblyOptions.wobblyEnabled) {
                 this.wobbly.setActive(false);
             }
@@ -882,19 +911,12 @@
             
             this.element._onGenieAnimationEnd = function() {
                 self.isGenieAnimating = false;
-                if (self.wobbly && self.wobblyOptions.wobblyEnabled) {
-                    self.wobbly.setActive(true);
-                    // Force reset du transform après l'animation pour éviter le décalage
-                    setTimeout(function() {
-                        if (self.wobbly && self.wobblyOptions.wobblyEnabled) {
-                            self.wobbly.resetTransform();
-                        }
-                    }, 50);
-                }
+                restorePosition();
             };
             
             this.genie.minimize = function() {
                 self.isGenieAnimating = true;
+                savePosition();
                 if (self.wobbly) {
                     self.wobbly.setActive(false);
                     self.wobbly.resetTransform();
@@ -904,6 +926,7 @@
             
             this.genie.restore = function() {
                 self.isGenieAnimating = true;
+                savePosition();
                 if (self.wobbly) {
                     self.wobbly.setActive(false);
                     self.wobbly.resetTransform();
@@ -950,6 +973,7 @@
             return this.wobblyOptions.wobblyEnabled;
         }
     };
+
 
     // ============================================================
     // EXPORTATION
