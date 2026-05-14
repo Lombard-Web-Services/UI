@@ -342,40 +342,41 @@
             <button id="resetParamsBtn" class="reset-btn">⟳ REINITIALISER</button>
         </div>
     </div>
-	<!-- Section Combo (Genie + Wobbly) -->
-	<div id="comboSection" class="demo-section">
-		<div class="section-header">
-			<h1>🔮 Combo Window</h1>
-			<p>Effet Genie + Wobbly combines</p>
-		</div>
-		
-		<div class="combo-container">
-			<div id="comboWindow" class="combo-window">
-				<div class="window-surface">
-					<div class="title-bar" data-drag-handle>
-						<div class="window-buttons">
-							<div class="window-btn close"></div>
-							<div class="window-btn minimize-btn" id="comboMinimizeTrigger"></div>
-							<div class="window-btn maximize" id="comboMaximizeTrigger"></div>
-						</div>
-						<div class="title-text">🔮 Combo Window (Genie + Wobbly)</div>
-					</div>
-					<div class="content">
-						<h2>✨ Effet Genie + Wobbly Combines</h2>
-						<p>Cette fenetre beneficie a la fois de l'effet de minimisation magique et de la deformation elastique au deplacement.</p>
-						<ul class="feature-list">
-							<li>🧞 Minimisation/Restauration directionnelle (Genie Effect)</li>
-							<li>🌀 Deformation elastique au deplacement (Wobbly)</li>
-							<li>⚡ Parametres configurables pour les deux effets</li>
-						</ul>
-					</div>
-				</div>
-			</div>
-		</div>
-		
-		<button id="comboActionBtn" class="control-btn" style="bottom: 120px; right: 40px;">🪔 Minimiser</button>
-		
-		<div class="double-panel">
+    
+    <!-- Section Combo (Genie + Wobbly) -->
+    <div id="comboSection" class="demo-section">
+        <div class="section-header">
+            <h1>🔮 Combo Window</h1>
+            <p>Effet Genie + Wobbly combines</p>
+        </div>
+        
+        <div class="combo-container">
+            <div id="comboWindow" class="combo-window">
+                <div class="window-surface">
+                    <div class="title-bar" data-drag-handle>
+                        <div class="window-buttons">
+                            <div class="window-btn close"></div>
+                            <div class="window-btn minimize-btn" id="comboMinimizeTrigger"></div>
+                            <div class="window-btn maximize" id="comboMaximizeTrigger"></div>
+                        </div>
+                        <div class="title-text">🔮 Combo Window (Genie + Wobbly)</div>
+                    </div>
+                    <div class="content">
+                        <h2>✨ Effet Genie + Wobbly Combines</h2>
+                        <p>Cette fenetre beneficie a la fois de l'effet de minimisation magique et de la deformation elastique au deplacement.</p>
+                        <ul class="feature-list">
+                            <li>🧞 Minimisation/Restauration directionnelle (Genie Effect)</li>
+                            <li>🌀 Deformation elastique au deplacement (Wobbly)</li>
+                            <li>⚡ Parametres configurables pour les deux effets</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <button id="comboActionBtn" class="control-btn" style="bottom: 120px; right: 40px;">🪔 Minimiser</button>
+        
+        <div class="double-panel">
             <h4>🎛️ Parametres Lampe Magique</h4>
             <div class="control-group">
                 <label>⏱️ Duree <span id="comboDurationVal">700ms</span></label>
@@ -545,201 +546,154 @@
         if (wobblyWindows[0]) wobblyWindows[0].bringToFront();
         
         // ============================================================
-        // COMBO WINDOW
+        // COMBO WINDOW - Initialisation differee
         // ============================================================
         
-        var comboWindow = document.getElementById('comboWindow');
-        var comboBtn = document.getElementById('comboActionBtn');
-        var comboMinimizeTrigger = document.getElementById('comboMinimizeTrigger');
-        var comboMaximizeTrigger = document.getElementById('comboMaximizeTrigger');
-        var comboToggle = document.getElementById('comboWobblyToggle');
+        var combo = null;
+        var comboInitialized = false;
         
-        var combo = new UILibrary.ComboWindow(comboWindow, comboBtn, {
-            duration: 700, skewIntensity: 50, glassEnabled: true,
-            wobblyIntensity: 1.2, springSpeed: 0.14, damping: 0.89, dragForce: 2.0,
-            wobblyEnabled: true
-        });
-        
-        if (comboMinimizeTrigger) {
-            comboMinimizeTrigger.addEventListener('click', function(e) {
-                e.stopPropagation();
-                combo.minimize();
+        // Fonction pour initialiser la Combo Window
+        function initComboWindow() {
+            if (comboInitialized) return;
+            
+            var comboWindowElem = document.getElementById('comboWindow');
+            var comboBtnElem = document.getElementById('comboActionBtn');
+            var comboMinimizeTriggerElem = document.getElementById('comboMinimizeTrigger');
+            var comboMaximizeTriggerElem = document.getElementById('comboMaximizeTrigger');
+            var comboToggleElem = document.getElementById('comboWobblyToggle');
+            
+            combo = new UILibrary.ComboWindow(comboWindowElem, comboBtnElem, {
+                duration: 700, skewIntensity: 50, glassEnabled: true,
+                wobblyIntensity: 1.2, springSpeed: 0.14, damping: 0.89, dragForce: 2.0,
+                wobblyEnabled: true
             });
+            
+            // Attacher les événements
+            if (comboMinimizeTriggerElem) {
+                comboMinimizeTriggerElem.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (combo) combo.minimize();
+                });
+            }
+            
+            if (comboMaximizeTriggerElem) {
+                comboMaximizeTriggerElem.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (combo) combo.toggleMaximize();
+                });
+            }
+            
+            if (comboToggleElem) {
+                comboToggleElem.addEventListener('change', function(e) {
+                    var enabled = e.target.checked;
+                    if (combo) combo.updateWobblyOptions({ wobblyEnabled: enabled });
+                });
+            }
+            
+            // Événements pour les sliders
+            var comboDuration = document.getElementById('comboDuration');
+            var comboSkew = document.getElementById('comboSkew');
+            var comboGlass = document.getElementById('comboGlass');
+            var comboWobIntensity = document.getElementById('comboWobIntensity');
+            var comboWobSpring = document.getElementById('comboWobSpring');
+            var comboWobDamping = document.getElementById('comboWobDamping');
+            var comboWobForce = document.getElementById('comboWobForce');
+            
+            if (comboDuration) {
+                comboDuration.addEventListener('input', function(e) {
+                    var val = parseInt(e.target.value);
+                    document.getElementById('comboDurationVal').innerHTML = val + 'ms';
+                    if (combo) combo.updateGenieOptions({ duration: val });
+                });
+            }
+            if (comboSkew) {
+                comboSkew.addEventListener('input', function(e) {
+                    var val = parseInt(e.target.value);
+                    document.getElementById('comboSkewVal').innerHTML = val + '°';
+                    if (combo) combo.updateGenieOptions({ skewIntensity: val });
+                });
+            }
+            if (comboGlass) {
+                comboGlass.addEventListener('input', function(e) {
+                    var val = parseInt(e.target.value) === 1;
+                    document.getElementById('comboGlassVal').innerHTML = val ? 'Active' : 'Desactive';
+                    if (combo) combo.updateGenieOptions({ glassEnabled: val });
+                });
+            }
+            if (comboWobIntensity) {
+                comboWobIntensity.addEventListener('input', function(e) {
+                    var val = parseFloat(e.target.value);
+                    document.getElementById('comboWobIntensityVal').innerHTML = val;
+                    if (combo) combo.updateWobblyOptions({ intensity: val });
+                });
+            }
+            if (comboWobSpring) {
+                comboWobSpring.addEventListener('input', function(e) {
+                    var val = parseFloat(e.target.value);
+                    document.getElementById('comboWobSpringVal').innerHTML = val;
+                    if (combo) combo.updateWobblyOptions({ springSpeed: val });
+                });
+            }
+            if (comboWobDamping) {
+                comboWobDamping.addEventListener('input', function(e) {
+                    var val = parseFloat(e.target.value);
+                    document.getElementById('comboWobDampingVal').innerHTML = val;
+                    if (combo) combo.updateWobblyOptions({ damping: val });
+                });
+            }
+            if (comboWobForce) {
+                comboWobForce.addEventListener('input', function(e) {
+                    var val = parseFloat(e.target.value);
+                    document.getElementById('comboWobForceVal').innerHTML = val;
+                    if (combo) combo.updateWobblyOptions({ dragForce: val });
+                });
+            }
+            
+            comboInitialized = true;
         }
         
-        if (comboMaximizeTrigger) {
-            comboMaximizeTrigger.addEventListener('click', function(e) {
-                e.stopPropagation();
-                combo.toggleMaximize();
+        // ============================================================
+        // NAVIGATION
+        // ============================================================
+        
+        var navBtns = document.querySelectorAll('.nav-btn');
+        var magicSection = document.getElementById('magicSection');
+        var wobblySection = document.getElementById('wobblySection');
+        var comboSec = document.getElementById('comboSection');
+        
+        navBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                navBtns.forEach(function(b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                
+                var section = btn.getAttribute('data-section');
+                magicSection.classList.remove('active');
+                wobblySection.classList.remove('active');
+                comboSec.classList.remove('active');
+                
+                if (section === 'magic') {
+                    magicSection.classList.add('active');
+                    themeBtn.style.display = 'block';
+                } else if (section === 'wobbly') {
+                    wobblySection.classList.add('active');
+                    themeBtn.style.display = 'none';
+                } else if (section === 'combo') {
+                    comboSec.classList.add('active');
+                    themeBtn.style.display = 'block';
+                    
+                    // Initialiser la Combo Window uniquement quand la section devient visible
+                    if (!comboInitialized) {
+                        setTimeout(function() {
+                            initComboWindow();
+                        }, 100);
+                    } else if (combo && combo.reposition) {
+                        setTimeout(function() {
+                            combo.reposition();
+                        }, 100);
+                    }
+                }
             });
-        }
-        
-        document.getElementById('comboDuration').addEventListener('input', function(e) {
-            var val = parseInt(e.target.value);
-            document.getElementById('comboDurationVal').innerHTML = val + 'ms';
-            combo.updateGenieOptions({ duration: val });
         });
-        document.getElementById('comboSkew').addEventListener('input', function(e) {
-            var val = parseInt(e.target.value);
-            document.getElementById('comboSkewVal').innerHTML = val + '°';
-            combo.updateGenieOptions({ skewIntensity: val });
-        });
-        document.getElementById('comboGlass').addEventListener('input', function(e) {
-            var val = parseInt(e.target.value) === 1;
-            document.getElementById('comboGlassVal').innerHTML = val ? 'Active' : 'Desactive';
-            combo.updateGenieOptions({ glassEnabled: val });
-        });
-        
-        document.getElementById('comboWobIntensity').addEventListener('input', function(e) {
-            var val = parseFloat(e.target.value);
-            document.getElementById('comboWobIntensityVal').innerHTML = val;
-            combo.updateWobblyOptions({ intensity: val });
-        });
-        document.getElementById('comboWobSpring').addEventListener('input', function(e) {
-            var val = parseFloat(e.target.value);
-            document.getElementById('comboWobSpringVal').innerHTML = val;
-            combo.updateWobblyOptions({ springSpeed: val });
-        });
-        document.getElementById('comboWobDamping').addEventListener('input', function(e) {
-            var val = parseFloat(e.target.value);
-            document.getElementById('comboWobDampingVal').innerHTML = val;
-            combo.updateWobblyOptions({ damping: val });
-        });
-        document.getElementById('comboWobForce').addEventListener('input', function(e) {
-            var val = parseFloat(e.target.value);
-            document.getElementById('comboWobForceVal').innerHTML = val;
-            combo.updateWobblyOptions({ dragForce: val });
-        });
-        
-        if (comboToggle) {
-            comboToggle.addEventListener('change', function(e) {
-                var enabled = e.target.checked;
-                combo.updateWobblyOptions({ wobblyEnabled: enabled });
-            });
-        }
-        
-		// ============================================================
-		// NAVIGATION - Cache le bouton theme sur Wobbly
-		// ============================================================
-		
-		var navBtns = document.querySelectorAll('.nav-btn');
-		var magicSection = document.getElementById('magicSection');
-		var wobblySection = document.getElementById('wobblySection');
-		var comboSec = document.getElementById('comboSection');
-		var combo = null;
-		var comboInitialized = false;
-		var comboWindowElem = null;
-		var comboBtnElem = null;
-		var comboMinimizeTriggerElem = null;
-		var comboMaximizeTriggerElem = null;
-		var comboToggleElem = null;
-		
-		navBtns.forEach(function(btn) {
-		    btn.addEventListener('click', function() {
-		        navBtns.forEach(function(b) { b.classList.remove('active'); });
-		        btn.classList.add('active');
-		        
-		        var section = btn.getAttribute('data-section');
-		        magicSection.classList.remove('active');
-		        wobblySection.classList.remove('active');
-		        comboSec.classList.remove('active');
-		        
-		        if (section === 'magic') {
-		            magicSection.classList.add('active');
-		            themeBtn.style.display = 'block';
-		        } else if (section === 'wobbly') {
-		            wobblySection.classList.add('active');
-		            themeBtn.style.display = 'none';
-		        } else if (section === 'combo') {
-		            comboSec.classList.add('active');
-		            themeBtn.style.display = 'block';
-		            
-		            // Initialiser la Combo Window uniquement quand la section devient visible
-		            if (!comboInitialized) {
-		                // Attendre que la transition CSS soit terminée
-		                setTimeout(function() {
-		                    comboWindowElem = document.getElementById('comboWindow');
-		                    comboBtnElem = document.getElementById('comboActionBtn');
-		                    comboMinimizeTriggerElem = document.getElementById('comboMinimizeTrigger');
-		                    comboMaximizeTriggerElem = document.getElementById('comboMaximizeTrigger');
-		                    comboToggleElem = document.getElementById('comboWobblyToggle');
-		                    
-		                    combo = new UILibrary.ComboWindow(comboWindowElem, comboBtnElem, {
-		                        duration: 700, skewIntensity: 50, glassEnabled: true,
-		                        wobblyIntensity: 1.2, springSpeed: 0.14, damping: 0.89, dragForce: 2.0,
-		                        wobblyEnabled: true
-		                    });
-		                    
-		                    // Attacher les événements après initialisation
-		                    if (comboMinimizeTriggerElem) {
-		                        comboMinimizeTriggerElem.addEventListener('click', function(e) {
-		                            e.stopPropagation();
-		                            combo.minimize();
-		                        });
-		                    }
-		                    
-		                    if (comboMaximizeTriggerElem) {
-		                        comboMaximizeTriggerElem.addEventListener('click', function(e) {
-		                            e.stopPropagation();
-		                            combo.toggleMaximize();
-		                        });
-		                    }
-		                    
-		                    if (comboToggleElem) {
-		                        comboToggleElem.addEventListener('change', function(e) {
-		                            var enabled = e.target.checked;
-		                            combo.updateWobblyOptions({ wobblyEnabled: enabled });
-		                        });
-		                    }
-		                    
-		                    // Événements pour les sliders
-		                    document.getElementById('comboDuration').addEventListener('input', function(e) {
-		                        var val = parseInt(e.target.value);
-		                        document.getElementById('comboDurationVal').innerHTML = val + 'ms';
-		                        combo.updateGenieOptions({ duration: val });
-		                    });
-		                    document.getElementById('comboSkew').addEventListener('input', function(e) {
-		                        var val = parseInt(e.target.value);
-		                        document.getElementById('comboSkewVal').innerHTML = val + '°';
-		                        combo.updateGenieOptions({ skewIntensity: val });
-		                    });
-		                    document.getElementById('comboGlass').addEventListener('input', function(e) {
-		                        var val = parseInt(e.target.value) === 1;
-		                        document.getElementById('comboGlassVal').innerHTML = val ? 'Active' : 'Desactive';
-		                        combo.updateGenieOptions({ glassEnabled: val });
-		                    });
-		                    document.getElementById('comboWobIntensity').addEventListener('input', function(e) {
-		                        var val = parseFloat(e.target.value);
-		                        document.getElementById('comboWobIntensityVal').innerHTML = val;
-		                        combo.updateWobblyOptions({ intensity: val });
-		                    });
-		                    document.getElementById('comboWobSpring').addEventListener('input', function(e) {
-		                        var val = parseFloat(e.target.value);
-		                        document.getElementById('comboWobSpringVal').innerHTML = val;
-		                        combo.updateWobblyOptions({ springSpeed: val });
-		                    });
-		                    document.getElementById('comboWobDamping').addEventListener('input', function(e) {
-		                        var val = parseFloat(e.target.value);
-		                        document.getElementById('comboWobDampingVal').innerHTML = val;
-		                        combo.updateWobblyOptions({ damping: val });
-		                    });
-		                    document.getElementById('comboWobForce').addEventListener('input', function(e) {
-		                        var val = parseFloat(e.target.value);
-		                        document.getElementById('comboWobForceVal').innerHTML = val;
-		                        combo.updateWobblyOptions({ dragForce: val });
-		                    });
-		                    
-		                    comboInitialized = true;
-		                }, 100); // Petit délai pour la transition
-		            } else if (combo && combo.reposition) {
-		                // Si déjà initialisé, simplement repositionner
-		                setTimeout(function() {
-		                    combo.reposition();
-		                }, 100);
-		            }
-		        }
-		    });
-		});
     })();
 </script>
 </body>
