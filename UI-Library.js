@@ -8,7 +8,7 @@
     'use strict';
 
     // ============================================================
-    // DRAG MANAGER - Gestion du drag & drop fluide
+    // DRAG MANAGER - Gestion du drag & drop fluide (version optimisée)
     // ============================================================
     
     function DragManager(element, options) {
@@ -21,6 +21,8 @@
         this._isDragging = false;
         this._offsetX = 0;
         this._offsetY = 0;
+        this._startLeft = 0;
+        this._startTop = 0;
         
         this._bindEvents();
     }
@@ -43,14 +45,21 @@
         _startDrag: function(clientX, clientY) {
             this._isDragging = true;
             this.element.classList.add('dragging');
+            
             var rect = this.element.getBoundingClientRect();
             this._offsetX = clientX - rect.left;
             this._offsetY = clientY - rect.top;
+            this._startLeft = rect.left;
+            this._startTop = rect.top;
+            
+            // Positionnement initial
             this.element.style.position = 'fixed';
-            this.element.style.left = rect.left + 'px';
-            this.element.style.top = rect.top + 'px';
+            this.element.style.left = this._startLeft + 'px';
+            this.element.style.top = this._startTop + 'px';
             this.element.style.bottom = 'auto';
             this.element.style.right = 'auto';
+            this.element.style.willChange = 'left, top';
+            
             this.onStart();
         },
         
@@ -63,10 +72,18 @@
         _drag: function(clientX, clientY) {
             var newLeft = clientX - this._offsetX;
             var newTop = clientY - this._offsetY;
-            newLeft = Math.max(5, Math.min(newLeft, window.innerWidth - this.element.offsetWidth - 5));
-            newTop = Math.max(5, Math.min(newTop, window.innerHeight - this.element.offsetHeight - 5));
+            
+            // Contraintes de bordure
+            var maxX = window.innerWidth - this.element.offsetWidth - 5;
+            var maxY = window.innerHeight - this.element.offsetHeight - 5;
+            
+            newLeft = Math.max(5, Math.min(newLeft, maxX));
+            newTop = Math.max(5, Math.min(newTop, maxY));
+            
+            // Application directe pour fluidité
             this.element.style.left = newLeft + 'px';
             this.element.style.top = newTop + 'px';
+            
             this.onMove(newLeft, newTop);
         },
         
@@ -76,6 +93,7 @@
             if (this._isDragging) {
                 this._isDragging = false;
                 this.element.classList.remove('dragging');
+                this.element.style.willChange = '';
                 this.onEnd();
             }
         },
@@ -411,7 +429,6 @@
                 }
                 if (self.buttonDrag) self.buttonDrag.setEnabled(true);
                 
-                // Signal pour ComboWindow
                 if (self.element._onGenieAnimationEnd) {
                     self.element._onGenieAnimationEnd();
                 }
@@ -479,7 +496,6 @@
                     self.button.classList.remove('restore-mode');
                 }
                 
-                // Signal pour ComboWindow
                 if (self.element._onGenieAnimationEnd) {
                     self.element._onGenieAnimationEnd();
                 }
@@ -760,7 +776,6 @@
         },
         
         _updatePhysics: function() {
-            // Si le wobble est desactive, ne rien faire
             if (!this._isWobblyActive) return;
             
             var spring = this.options.springSpeed;
@@ -835,7 +850,7 @@
     };
 
     // ============================================================
-    // MODULE 3: COMBO WINDOW (Genie + Wobbly) - Version corrigee
+    // MODULE 3: COMBO WINDOW (Genie + Wobbly) - Version corrigée
     // ============================================================
     
     function ComboWindow(element, button, options) {
@@ -872,16 +887,13 @@
             this.genie = new GenieEffect(this.element, this.button, this.genieOptions);
             this.wobbly = new WobblyWindow(this.element, this.wobblyOptions);
             
-            // Desactiver le wobble initialement si option desactivee
             if (!this.wobblyOptions.wobblyEnabled) {
                 this.wobbly.setActive(false);
             }
             
-            // Stocker les methodes originales
             var originalMinimize = this.genie.minimize.bind(this.genie);
             var originalRestore = this.genie.restore.bind(this.genie);
             
-            // Definir le callback de fin d'animation
             this.element._onGenieAnimationEnd = function() {
                 self.isGenieAnimating = false;
                 if (self.wobbly && self.wobblyOptions.wobblyEnabled) {
@@ -889,7 +901,6 @@
                 }
             };
             
-            // Overrider minimize
             this.genie.minimize = function() {
                 self.isGenieAnimating = true;
                 if (self.wobbly) {
@@ -899,7 +910,6 @@
                 originalMinimize();
             };
             
-            // Overrider restore
             this.genie.restore = function() {
                 self.isGenieAnimating = true;
                 if (self.wobbly) {
@@ -908,6 +918,19 @@
                 }
                 originalRestore();
             };
+            
+            // Bloquer le drag du wobbly pendant l'animation genie
+            if (this.wobbly) {
+                var originalWobblyMouseDown = this.wobbly._onMouseDown.bind(this.wobbly);
+                this.wobbly._onMouseDown = function(e) {
+                    if (self.isGenieAnimating) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                    }
+                    originalWobblyMouseDown(e);
+                };
+            }
         },
         
         updateGenieOptions: function(options) {
