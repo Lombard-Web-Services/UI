@@ -324,7 +324,7 @@
             var closeBtn = this.element.querySelector('.close');
             if (closeBtn) {
                 closeBtn.addEventListener('click', function() {
-                    alert('Lampe Magique vous salue !');
+                    // Fonctionnalité de fermeture
                 });
             }
             
@@ -508,11 +508,12 @@
     };
 
     // ============================================================
-    // MODULE 2: WOBBLY WINDOW (Compiz Style)
+    // MODULE 2: WOBBLY WINDOW (Compiz Style) - Version corrigee
     // ============================================================
     
-    function WobblyWindow(element, options) {
-        this.element = element;
+    function WobblyWindow(wrapperElement, contentElement, options) {
+        this.wrapper = wrapperElement;
+        this.element = contentElement;
         this.options = {
             intensity: (options && options.intensity) || 1.2,
             springSpeed: (options && options.springSpeed) || 0.14,
@@ -559,15 +560,15 @@
         
         _init: function() {
             this.element.style.transformOrigin = 'center center';
-            this.element.style.willChange = 'transform, left, top';
+            this.element.style.willChange = 'transform';
             
-            var titlebar = this.element.querySelector('[data-drag-handle]');
+            var titlebar = this.wrapper.querySelector('[data-drag-handle]');
             if (titlebar) {
                 titlebar.addEventListener('mousedown', this._onMouseDown.bind(this));
             }
             
             var self = this;
-            this.element.addEventListener('mousedown', function(e) {
+            this.wrapper.addEventListener('mousedown', function(e) {
                 if (!e.target.closest('.window-btn')) {
                     self.bringToFront();
                 }
@@ -579,34 +580,34 @@
         },
         
         _saveNormalBounds: function() {
-            var rect = this.element.getBoundingClientRect();
+            var rect = this.wrapper.getBoundingClientRect();
             this.normalLeft = rect.left;
             this.normalTop = rect.top;
-            this.normalWidth = this.element.offsetWidth;
-            this.normalHeight = this.element.offsetHeight;
+            this.normalWidth = this.wrapper.offsetWidth;
+            this.normalHeight = this.wrapper.offsetHeight;
         },
         
         _bindButtons: function() {
             var self = this;
             
-            var closeBtn = this.element.querySelector('[data-action="close"]');
+            var closeBtn = this.wrapper.querySelector('[data-action="close"]');
             if (closeBtn) {
                 closeBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    self.element.style.display = 'none';
+                    self.wrapper.style.display = 'none';
                 });
             }
             
-            var minimizeBtn = this.element.querySelector('[data-action="minimize"]');
+            var minimizeBtn = this.wrapper.querySelector('[data-action="minimize"]');
             if (minimizeBtn) {
                 minimizeBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    self.element.style.transform = 'scale(0.95)';
-                    setTimeout(function() { self.element.style.transform = ''; }, 250);
+                    self.wrapper.style.transform = 'scale(0.95)';
+                    setTimeout(function() { self.wrapper.style.transform = ''; }, 250);
                 });
             }
             
-            var maximizeBtn = this.element.querySelector('[data-action="maximize"]');
+            var maximizeBtn = this.wrapper.querySelector('[data-action="maximize"]');
             if (maximizeBtn) {
                 maximizeBtn.addEventListener('click', function(e) {
                     e.stopPropagation();
@@ -623,36 +624,36 @@
                 if (z > maxZ) maxZ = z;
                 win.classList.remove('focused');
             });
-            this.element.style.zIndex = maxZ + 1;
-            this.element.classList.add('focused');
+            this.wrapper.style.zIndex = maxZ + 1;
+            this.wrapper.classList.add('focused');
         },
         
         toggleMaximize: function() {
             if (!this.isMaximized) {
-                var rect = this.element.getBoundingClientRect();
+                var rect = this.wrapper.getBoundingClientRect();
                 this.normalLeft = rect.left;
                 this.normalTop = rect.top;
-                this.normalWidth = this.element.offsetWidth;
-                this.normalHeight = this.element.offsetHeight;
+                this.normalWidth = this.wrapper.offsetWidth;
+                this.normalHeight = this.wrapper.offsetHeight;
                 
-                this.element.style.left = '0';
-                this.element.style.top = '0';
-                this.element.style.width = '100%';
-                this.element.style.height = '100vh';
-                var surface = this.element.querySelector('.window-surface');
+                this.wrapper.style.left = '0';
+                this.wrapper.style.top = '0';
+                this.wrapper.style.width = '100%';
+                this.wrapper.style.height = '100vh';
+                var surface = this.wrapper.querySelector('.window-surface');
                 if (surface) surface.style.borderRadius = '0';
-                this.element.style.borderRadius = '0';
+                this.wrapper.style.borderRadius = '0';
                 this.isMaximized = true;
                 this.windowLeft = 0;
                 this.windowTop = 0;
             } else {
-                this.element.style.left = this.normalLeft + 'px';
-                this.element.style.top = this.normalTop + 'px';
-                this.element.style.width = this.normalWidth + 'px';
-                this.element.style.height = this.normalHeight + 'px';
-                var surface = this.element.querySelector('.window-surface');
+                this.wrapper.style.left = this.normalLeft + 'px';
+                this.wrapper.style.top = this.normalTop + 'px';
+                this.wrapper.style.width = this.normalWidth + 'px';
+                this.wrapper.style.height = this.normalHeight + 'px';
+                var surface = this.wrapper.querySelector('.window-surface');
                 if (surface) surface.style.borderRadius = '24px';
-                this.element.style.borderRadius = '24px';
+                this.wrapper.style.borderRadius = '24px';
                 this.isMaximized = false;
                 this.windowLeft = this.normalLeft;
                 this.windowTop = this.normalTop;
@@ -667,9 +668,9 @@
             e.preventDefault();
             this.bringToFront();
             this.isDragging = true;
-            this.element.classList.add('dragging-active');
+            this.wrapper.classList.add('dragging-active');
             
-            var rect = this.element.getBoundingClientRect();
+            var rect = this.wrapper.getBoundingClientRect();
             this.dragStartX = e.clientX;
             this.dragStartY = e.clientY;
             this.windowLeft = rect.left;
@@ -702,11 +703,11 @@
             
             var newLeft = this.windowLeft + dx;
             var newTop = this.windowTop + dy;
-            newLeft = Math.max(5, Math.min(newLeft, window.innerWidth - this.element.offsetWidth - 5));
-            newTop = Math.max(5, Math.min(newTop, window.innerHeight - this.element.offsetHeight - 5));
+            newLeft = Math.max(5, Math.min(newLeft, window.innerWidth - this.wrapper.offsetWidth - 5));
+            newTop = Math.max(5, Math.min(newTop, window.innerHeight - this.wrapper.offsetHeight - 5));
             
-            this.element.style.left = newLeft + 'px';
-            this.element.style.top = newTop + 'px';
+            this.wrapper.style.left = newLeft + 'px';
+            this.wrapper.style.top = newTop + 'px';
             
             var intensity = this.options.intensity;
             var force = this.options.dragForce;
@@ -736,7 +737,7 @@
         _onMouseUp: function(e) {
             if (!this.isDragging) return;
             this.isDragging = false;
-            this.element.classList.remove('dragging-active');
+            this.wrapper.classList.remove('dragging-active');
             document.removeEventListener('mousemove', this._onMouseMove);
             document.removeEventListener('mouseup', this._onMouseUp);
             
@@ -750,7 +751,7 @@
             this.scaleVelY += (Math.random() - 0.5) * 0.05;
             this.rotateVel += (Math.random() - 0.5) * 1.2;
             
-            var rect = this.element.getBoundingClientRect();
+            var rect = this.wrapper.getBoundingClientRect();
             this.windowLeft = rect.left;
             this.windowTop = rect.top;
         },
@@ -784,7 +785,7 @@
             this.currentScaleY = Math.min(1 + this.options.maxScale, Math.max(1 - this.options.maxScale, this.currentScaleY));
             this.currentRotate = Math.min(5, Math.max(-5, this.currentRotate));
             
-            var transform = 'translate(0px, 0px) scale(' + this.currentScaleX + ', ' + this.currentScaleY + ') skew(' + this.currentSkewX + 'deg, ' + this.currentSkewY + 'deg) rotate(' + this.currentRotate + 'deg)';
+            var transform = 'scale(' + this.currentScaleX + ', ' + this.currentScaleY + ') skew(' + this.currentSkewX + 'deg, ' + this.currentSkewY + 'deg) rotate(' + this.currentRotate + 'deg)';
             this.element.style.transform = transform;
         },
         
@@ -803,15 +804,31 @@
                     this.options[key] = newParams[key];
                 }
             }
+        },
+        
+        resetTransform: function() {
+            this.currentSkewX = 0;
+            this.currentSkewY = 0;
+            this.currentScaleX = 1;
+            this.currentScaleY = 1;
+            this.currentRotate = 0;
+            this.skewVelX = 0;
+            this.skewVelY = 0;
+            this.scaleVelX = 0;
+            this.scaleVelY = 0;
+            this.rotateVel = 0;
+            this.element.style.transform = '';
         }
     };
 
     // ============================================================
     // MODULE 3: COMBO WINDOW (Genie + Wobbly)
+    // Structure: Genie sur wrapper, Wobbly sur contenu interne
     // ============================================================
     
-    function ComboWindow(element, button, options) {
-        this.element = element;
+    function ComboWindow(wrapperElement, contentElement, button, options) {
+        this.wrapper = wrapperElement;
+        this.content = contentElement;
         this.button = button;
         
         this.genieOptions = {
@@ -830,7 +847,6 @@
         
         this.genie = null;
         this.wobbly = null;
-        this._originalUpdatePhysics = null;
         this._init();
     }
     
@@ -840,50 +856,13 @@
         _init: function() {
             var self = this;
             
-            this.genie = new GenieEffect(this.element, this.button, this.genieOptions);
-            this.wobbly = new WobblyWindow(this.element, this.wobblyOptions);
+            this.genie = new GenieEffect(this.wrapper, this.button, this.genieOptions);
+            this.wobbly = new WobblyWindow(this.wrapper, this.content, this.wobblyOptions);
             
-            this._originalUpdatePhysics = this.wobbly._updatePhysics.bind(this.wobbly);
-            
-            // Remplacer la méthode updatePhysics pour qu'elle utilise l'option wobblyEnabled
-            this.wobbly._updatePhysics = function() {
-                if (!self.wobblyOptions.wobblyEnabled) {
-                    var transform = 'translate(0px, 0px) scale(1, 1) skew(0deg, 0deg) rotate(0deg)';
-                    this.element.style.transform = transform;
-                    return;
-                }
-                
-                var spring = this.options.springSpeed;
-                var damping = this.options.damping;
-                
-                this.skewVelX += (0 - this.currentSkewX) * spring;
-                this.skewVelY += (0 - this.currentSkewY) * spring;
-                this.skewVelX *= damping;
-                this.skewVelY *= damping;
-                this.currentSkewX += this.skewVelX;
-                this.currentSkewY += this.skewVelY;
-                
-                this.scaleVelX += (1 - this.currentScaleX) * spring;
-                this.scaleVelY += (1 - this.currentScaleY) * spring;
-                this.scaleVelX *= damping;
-                this.scaleVelY *= damping;
-                this.currentScaleX += this.scaleVelX;
-                this.currentScaleY += this.scaleVelY;
-                
-                this.rotateVel += (0 - this.currentRotate) * spring;
-                this.rotateVel *= damping;
-                this.currentRotate += this.rotateVel;
-                
-                var maxSkew = this.options.maxSkew;
-                this.currentSkewX = Math.min(maxSkew, Math.max(-maxSkew, this.currentSkewX));
-                this.currentSkewY = Math.min(maxSkew, Math.max(-maxSkew, this.currentSkewY));
-                this.currentScaleX = Math.min(1 + this.options.maxScale, Math.max(1 - this.options.maxScale, this.currentScaleX));
-                this.currentScaleY = Math.min(1 + this.options.maxScale, Math.max(1 - this.options.maxScale, this.currentScaleY));
-                this.currentRotate = Math.min(5, Math.max(-5, this.currentRotate));
-                
-                var transform = 'translate(0px, 0px) scale(' + this.currentScaleX + ', ' + this.currentScaleY + ') skew(' + this.currentSkewX + 'deg, ' + this.currentSkewY + 'deg) rotate(' + this.currentRotate + 'deg)';
-                this.element.style.transform = transform;
-            }.bind(this.wobbly);
+            // Desactiver le wobble si option desactivee
+            if (!this.wobblyOptions.wobblyEnabled) {
+                this.wobbly.resetTransform();
+            }
         },
         
         updateGenieOptions: function(options) {
@@ -893,6 +872,9 @@
         updateWobblyOptions: function(options) {
             if (options.wobblyEnabled !== undefined) {
                 this.wobblyOptions.wobblyEnabled = options.wobblyEnabled;
+                if (!options.wobblyEnabled) {
+                    if (this.wobbly) this.wobbly.resetTransform();
+                }
             }
             if (this.wobbly) this.wobbly.updateParams(options);
         },
@@ -907,6 +889,12 @@
         
         restore: function() {
             if (this.genie) this.genie.restore();
+            // Reinitialiser le wobble apres restauration
+            setTimeout(function() {
+                if (this.wobbly && this.wobblyOptions.wobblyEnabled) {
+                    this.wobbly.resetTransform();
+                }
+            }.bind(this), 50);
         },
         
         bringToFront: function() {
