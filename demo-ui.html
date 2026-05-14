@@ -5,6 +5,198 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>UI-Library | Lampe Magique & Wobbly Windows & Combo</title>
     <link rel="stylesheet" href="UI-Library.css">
+    <style>
+        /* Styles supplementaires pour la demo */
+        .demo-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+        
+        .demo-section {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+            overflow: hidden;
+        }
+        
+        .demo-section.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .section-header {
+            text-align: center;
+            padding: 20px;
+            color: white;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 20;
+            pointer-events: none;
+        }
+        
+        body.light-theme .section-header h1 {
+            color: #1a1a2e;
+        }
+        
+        body.light-theme .section-header p {
+            color: #2a2a4e;
+        }
+        
+        .section-header h1 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        
+        .nav-bar {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(16px);
+            border-radius: 60px;
+            padding: 8px 20px;
+            display: flex;
+            gap: 16px;
+            z-index: 1000;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .nav-btn {
+            padding: 10px 24px;
+            border-radius: 40px;
+            border: none;
+            background: transparent;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        body.light-theme .nav-btn {
+            color: #1a1a2e;
+        }
+        
+        .nav-btn.active {
+            background: linear-gradient(135deg, #ffbd2e, #a78bfa);
+            color: #1a1a2e;
+        }
+        
+        .nav-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .wobbly-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a6b6b, #1a0a5e);
+            border-radius: 0;
+            overflow: hidden;
+        }
+        
+        .wobbly-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 40%, rgba(0,255,200,0.12), rgba(128,0,255,0.12));
+            pointer-events: none;
+        }
+        
+        .combo-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a6b6b, #1a0a5e);
+            border-radius: 0;
+            overflow: hidden;
+        }
+        
+        .combo-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 40%, rgba(0,255,200,0.12), rgba(128,0,255,0.12));
+            pointer-events: none;
+        }
+        
+        .wobbly-window {
+            position: absolute;
+        }
+        
+        .wobbly-window[data-win-id="0"] { left: 60px; top: 80px; }
+        .wobbly-window[data-win-id="1"] { left: 520px; top: 180px; width: 460px; min-height: 380px; }
+        .wobbly-window[data-win-id="2"] { left: 300px; top: 480px; width: 440px; min-height: 340px; }
+        
+        .combo-window {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 560px;
+        }
+        
+        /* Global theme button */
+        .global-theme-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 40px;
+            color: #ffbd2e;
+            cursor: pointer;
+            z-index: 1001;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+        
+        .global-theme-btn:hover {
+            background: rgba(255, 189, 46, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        body.light-theme .global-theme-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: #1a1a2e;
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        body.light-theme .global-theme-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .window, .combo-window { width: 90%; }
+            .wobbly-window { width: 90%; left: 5% !important; }
+            .potentiometer-panel { flex-direction: column; gap: 16px; bottom: auto; top: 20px; left: 20px; }
+            .control-panel { width: 260px; padding: 16px; bottom: auto; top: 80px; }
+            .double-panel { width: 280px; bottom: auto; top: 80px; }
+            .global-theme-btn { top: 20px; right: 20px; }
+        }
+    </style>
 </head>
 <body>
 
