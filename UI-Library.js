@@ -331,6 +331,7 @@
         _initPosition: function() {
             var left = (window.innerWidth - this.element.offsetWidth) / 2;
             var top = (window.innerHeight - this.element.offsetHeight) / 2;
+            this.element.style.position = 'fixed';
             this.element.style.left = left + 'px';
             this.element.style.top = top + 'px';
             this.savedPosition = {
@@ -840,7 +841,7 @@
     // ============================================================
     // MODULE 3: COMBO WINDOW (Genie + Wobbly) - Version corrigée
     // ============================================================
-        
+    
     function ComboWindow(element, button, options) {
         this.element = element;
         this.button = button;
@@ -862,9 +863,8 @@
         this.genie = null;
         this.wobbly = null;
         this.isGenieAnimating = false;
-        this._savedLeft = null;
-        this._savedTop = null;
-        this._userMoved = false;
+        this._savedPosition = null;
+        this._positionInitialized = false;
         
         this._init();
     }
@@ -882,70 +882,61 @@
             }
         },
         
-        reposition: function() {
-            // Ne repositionner que si l'utilisateur n'a pas déplacé la fenêtre
-            if (!this._userMoved) {
-                var left = (window.innerWidth - this.element.offsetWidth) / 2;
-                var top = (window.innerHeight - this.element.offsetHeight) / 2;
-                
-                this.element.style.left = left + 'px';
-                this.element.style.top = top + 'px';
-                this.element.style.transform = '';
-                
-                if (this.genie) {
-                    this.genie.savedPosition = {
-                        left: left,
-                        top: top,
-                        width: this.element.offsetWidth,
-                        height: this.element.offsetHeight
-                    };
-                }
-            }
-            
-            // Forcer une mise à jour du WobblyWindow
-            if (this.wobbly) {
-                this.wobbly._saveNormalBounds();
-            }
-        },
-        
         _initPosition: function() {
-            var left = (window.innerWidth - this.element.offsetWidth) / 2;
-            var top = (window.innerHeight - this.element.offsetHeight) / 2;
+            // Ne pas réinitialiser si position déjà sauvegardée
+            if (this._positionInitialized && this._savedPosition) {
+                this.element.style.position = 'fixed';
+                this.element.style.left = this._savedPosition.left + 'px';
+                this.element.style.top = this._savedPosition.top + 'px';
+                this.element.style.transform = '';
+                return this._savedPosition;
+            }
             
-            this.element.style.position = 'absolute';
-            this.element.style.left = left + 'px';
-            this.element.style.top = top + 'px';
+            // Lire la position CSS actuelle définie dans le HTML
+            var computed = window.getComputedStyle(this.element);
+            var currentLeft = parseFloat(computed.left) || 0;
+            var currentTop = parseFloat(computed.top) || 0;
             
-            // Nettoyer tout transform CSS conflictuel
+            // Si pas de position définie, centrer
+            if (currentLeft === 0 && currentTop === 0) {
+                currentLeft = (window.innerWidth - this.element.offsetWidth) / 2;
+                currentTop = (window.innerHeight - this.element.offsetHeight) / 2;
+            }
+            
+            this.element.style.position = 'fixed';
+            this.element.style.left = currentLeft + 'px';
+            this.element.style.top = currentTop + 'px';
             this.element.style.transform = '';
             
-            if (this.genie) {
-                this.genie.savedPosition = {
-                    left: left,
-                    top: top,
-                    width: this.element.offsetWidth,
-                    height: this.element.offsetHeight
-                };
-            }
+            this._savedPosition = {
+                left: currentLeft,
+                top: currentTop,
+                width: this.element.offsetWidth,
+                height: this.element.offsetHeight
+            };
+            this._positionInitialized = true;
             
-            return { left: left, top: top };
+            return this._savedPosition;
         },
         
         _saveCurrentPosition: function() {
             var rect = this.element.getBoundingClientRect();
-            this._savedLeft = rect.left;
-            this._savedTop = rect.top;
-            return { left: this._savedLeft, top: this._savedTop };
-        },
-        
-        _restorePosition: function() {
-            if (this._savedLeft !== null && this._savedTop !== null) {
-                this.element.style.left = this._savedLeft + 'px';
-                this.element.style.top = this._savedTop + 'px';
-                this.element.style.transform = '';
-                this._savedLeft = null;
-                this._savedTop = null;
+            this._savedPosition = {
+                left: rect.left,
+                top: rect.top,
+                width: rect.width,
+                height: rect.height
+            };
+            // Mettre à jour aussi la savedPosition du genie
+            if (this.genie) {
+                this.genie.savedPosition = {
+                    left: rect.left,
+                    top: rect.top,
+                    width: rect.width,
+                    height: rect.height
+                };
             }
+            return this._savedPosition;
         },
         
         _init: function() {
@@ -963,6 +954,7 @@
             // Initialiser la position correctement
             var initialPos = this._initPosition();
             
+            // S'assurer que le genie a la bonne savedPosition
             this.genie.savedPosition = {
                 left: initialPos.left,
                 top: initialPos.top,
@@ -974,12 +966,18 @@
                 this.wobbly.setActive(false);
             }
             
-            // Intercepter le drag pour marquer que l'utilisateur a déplacé la fenêtre
-            if (this.wobbly) {
-                var originalWobblyMouseMove = this.wobbly._onMouseMove.bind(this.wobbly);
-                this.wobbly._onMouseMove = function(e) {
-                    self._userMoved = true;
-                    originalWobblyMouseMove(e);
+            // Intercepter le drag du genie pour sauvegarder la position
+            var originalGenieDragMove = null;
+            if (this.genie.windowDrag) {
+                originalGenieDragMove = this.genie.windowDrag.onMove;
+                this.genie.windowDrag.onMove = function(x, y) {
+                    self._savedPosition = {
+                        left: x, top: y,
+                        width: self.element.offsetWidth,
+                        height: self.element.offsetHeight
+                    };
+                    self.genie.savedPosition = self._savedPosition;
+                    if (originalGenieDragMove) originalGenieDragMove(x, y);
                 };
             }
             
@@ -988,7 +986,6 @@
             
             this.element._onGenieAnimationEnd = function() {
                 self.isGenieAnimating = false;
-                self._restorePosition();
                 if (self.wobbly && self.wobblyOptions.wobblyEnabled) {
                     self.wobbly.setActive(true);
                     setTimeout(function() {
@@ -1001,6 +998,7 @@
             
             this.genie.minimize = function() {
                 self.isGenieAnimating = true;
+                // Sauvegarder la position AVANT la minimisation
                 self._saveCurrentPosition();
                 if (self.wobbly) {
                     self.wobbly.setActive(false);
@@ -1011,7 +1009,15 @@
             
             this.genie.restore = function() {
                 self.isGenieAnimating = true;
-                self._saveCurrentPosition();
+                // S'assurer que le genie restaure à la position sauvegardée
+                if (self._savedPosition) {
+                    self.genie.savedPosition = {
+                        left: self._savedPosition.left,
+                        top: self._savedPosition.top,
+                        width: self._savedPosition.width,
+                        height: self._savedPosition.height
+                    };
+                }
                 if (self.wobbly) {
                     self.wobbly.setActive(false);
                     self.wobbly.resetTransform();
@@ -1031,19 +1037,26 @@
                 };
             }
             
-            // Redimensionnement
+            // Redimensionnement - ne pas réinitialiser au centre, garder la position relative
             window.addEventListener('resize', function() {
-                if (!self.genie.isMinimized && !self.genie.isAnimating && !self._userMoved) {
-                    var left = (window.innerWidth - self.element.offsetWidth) / 2;
-                    var top = (window.innerHeight - self.element.offsetHeight) / 2;
-                    self.element.style.left = left + 'px';
-                    self.element.style.top = top + 'px';
+                if (!self.genie.isMinimized && !self.genie.isAnimating && self._savedPosition) {
+                    var maxLeft = window.innerWidth - self._savedPosition.width - 10;
+                    var maxTop = window.innerHeight - self._savedPosition.height - 10;
+                    var newLeft = Math.max(5, Math.min(self._savedPosition.left, maxLeft));
+                    var newTop = Math.max(5, Math.min(self._savedPosition.top, maxTop));
+                    
+                    self.element.style.left = newLeft + 'px';
+                    self.element.style.top = newTop + 'px';
                     self.element.style.transform = '';
+                    
+                    self._savedPosition.left = newLeft;
+                    self._savedPosition.top = newTop;
+                    
                     if (self.genie) {
                         self.genie.savedPosition = {
-                            left: left, top: top,
-                            width: self.element.offsetWidth,
-                            height: self.element.offsetHeight
+                            left: newLeft, top: newTop,
+                            width: self._savedPosition.width,
+                            height: self._savedPosition.height
                         };
                     }
                 }
@@ -1069,6 +1082,25 @@
             }
         },
         
+        reposition: function() {
+            if (!this._savedPosition) return;
+            this.element.style.position = 'fixed';
+            this.element.style.left = this._savedPosition.left + 'px';
+            this.element.style.top = this._savedPosition.top + 'px';
+            this.element.style.transform = '';
+            if (this.genie) {
+                this.genie.savedPosition = {
+                    left: this._savedPosition.left,
+                    top: this._savedPosition.top,
+                    width: this._savedPosition.width,
+                    height: this._savedPosition.height
+                };
+            }
+            if (this.wobbly) {
+                this.wobbly._saveNormalBounds();
+            }
+        },
+        
         toggle: function() { if (this.genie) this.genie.toggle(); },
         minimize: function() { if (this.genie) this.genie.minimize(); },
         restore: function() { if (this.genie) this.genie.restore(); },
@@ -1079,6 +1111,7 @@
             return this.wobblyOptions.wobblyEnabled;
         }
     };
+
     // ============================================================
     // EXPORTATION
     // ============================================================
