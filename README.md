@@ -15,7 +15,7 @@
 
 ---
 
-## ✨ Présentation
+## Présentation
 
 **UI-Library** est une bibliothèque JavaScript légère qui implémente des effets d'interface utilisateur modernes et fluides. Elle s'inspire des principes du livre *"Secrets of the JavaScript Ninja"* pour offrir une architecture propre basée sur les **prototypes**, les **classes constructeurs** et les **patterns de conception avancés**.
 
@@ -29,7 +29,7 @@ Cette bibliothèque propose trois modules principaux :
 
 ---
 
-## 🚀 Démonstration en ligne
+## Démonstration en ligne
 
 Ouvrez `demo-ui.html` dans un navigateur moderne pour explorer tous les effets avec :
 
@@ -40,7 +40,7 @@ Ouvrez `demo-ui.html` dans un navigateur moderne pour explorer tous les effets a
 
 ---
 
-## 📦 Installation
+## Installation
 
 Incluez simplement les fichiers dans votre page HTML :
 
@@ -53,7 +53,7 @@ Incluez simplement les fichiers dans votre page HTML :
 
 ---
 
-## 🧞 Lampe Magique (Genie Effect)
+## Lampe Magique (Genie Effect)
 
 Animation de minimisation/restauration où la fenêtre semble être aspirée vers le bouton, puis réapparaît depuis le bord opposé.
 
@@ -89,7 +89,7 @@ genie.updateOptions({
 
 ---
 
-## 🌀 Wobbly Windows (Compiz Style)
+## Wobbly Windows (Compiz Style)
 
 Effet élastique liquide inspiré de Compiz Fusion : la fenêtre elle-même se déforme comme de la gelée pendant le déplacement.
 
@@ -127,7 +127,7 @@ wobbly.updateParams({
 
 ---
 
-## 🔮 Combo Window
+## Combo Window
 
 Combine les deux effets précédents sur une même fenêtre : minimisation magique **et** déformation élastique au déplacement.
 
@@ -160,7 +160,7 @@ combo.updateWobblyOptions({ intensity: 1.5, wobblyEnabled: false });
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 La bibliothèque utilise une approche orientée **prototype** et **classes constructeurs** :
 
@@ -188,7 +188,7 @@ UI/
 
 ---
 
-## 🎛️ Paramètres disponibles
+## Paramètres disponibles
 
 ### GenieEffect
 
@@ -209,7 +209,7 @@ UI/
 
 ---
 
-## 🌐 Compatibilité
+## Compatibilité
 
 | Navigateur | Support |
 |------------|---------|
