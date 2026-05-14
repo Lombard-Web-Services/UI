@@ -6,7 +6,7 @@
   </a>
 </p>
 
-<p align="center"><strong>Bibliothèque JavaScript d'effets UX/UI avancés — Fenêtres magiques, déformations élastiques et glassmorphism</strong></p>
+<p align="center"><strong>Bibliothèque JavaScript d'effets UX/UI avancés — Lampe magiques, déformations élastiques fenêtre wobbly et glassmorphism</strong></p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/version-1.0.0-blue?style=flat-square" alt="Version">
