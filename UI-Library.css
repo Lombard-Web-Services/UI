@@ -10,7 +10,6 @@
     box-sizing: border-box;
 }
 
-/* Animation de fond principale - prend toute la page sans bords arrondis */
 body {
     min-height: 100vh;
     background: radial-gradient(circle at 0% 0%, #0f0c29, #1a1a3e, #0a0a15);
@@ -38,7 +37,7 @@ body::before {
     100% { opacity: 0.1; transform: scale(1); }
 }
 
-/* Theme Light - contraste ameliore pour tous les textes */
+/* Theme Light */
 body.light-theme {
     background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
 }
@@ -48,24 +47,20 @@ body.light-theme::before {
 }
 
 body.light-theme .window,
-body.light-theme .window-surface,
-body.light-theme .combo-window .window-surface {
+body.light-theme .window-surface {
     background: rgba(25, 30, 45, 0.92);
     backdrop-filter: blur(12px);
-    box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 body.light-theme .title-bar,
 body.light-theme .window-titlebar {
     background: rgba(15, 20, 35, 0.8);
-    border-bottom-color: rgba(255, 255, 255, 0.15);
 }
 
 body.light-theme .title-text,
 body.light-theme .window-title {
     color: #ffffff;
-    font-weight: 600;
 }
 
 body.light-theme .window-content,
@@ -85,17 +80,6 @@ body.light-theme .section-header p {
     color: #1a1a2e;
 }
 
-body.light-theme .section-header p {
-    color: #2a2a4e;
-}
-
-body.light-theme .content h2 {
-    background: linear-gradient(135deg, #ffd89b, #c7e9fb, #a78bfa);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-}
-
 body.light-theme .control-panel,
 body.light-theme .potentiometer-panel,
 body.light-theme .double-panel {
@@ -113,37 +97,7 @@ body.light-theme .control-group label {
     color: #c0c0c0;
 }
 
-body.light-theme .potentiometer-value {
-    background: rgba(0, 0, 0, 0.4);
-    color: #ffbd2e;
-}
-
-body.light-theme .debug-info,
-body.light-theme .demo-info {
-    background: rgba(0, 0, 0, 0.6);
-    color: #a7f3d0;
-}
-
-/* No Glass mode */
-body.no-glass .window,
-body.no-glass .control-btn,
-body.no-glass .potentiometer-panel,
-body.no-glass .window-surface,
-body.no-glass .control-panel,
-body.no-glass .combo-window .window-surface,
-body.no-glass .double-panel {
-    backdrop-filter: none;
-    background: rgba(0, 0, 0, 0.85);
-}
-
-body.no-glass.light-theme .window,
-body.no-glass.light-theme .window-surface,
-body.no-glass.light-theme .control-panel,
-body.no-glass.light-theme .double-panel {
-    background: rgba(10, 15, 25, 0.95);
-}
-
-/* Background pour Wobbly et Combo - degrade plein ecran sans border radius */
+/* Wobbly et Combo backgrounds */
 .wobbly-container,
 .combo-container {
     position: absolute;
@@ -168,25 +122,16 @@ body.no-glass.light-theme .double-panel {
     pointer-events: none;
 }
 
-body.light-theme .wobbly-container,
-body.light-theme .combo-container {
-    background: linear-gradient(135deg, #0a4a4a, #1a0a3e);
-}
-
-/* ============================================================
-   STYLES LAMPE MAGIQUE
-   ============================================================ */
-
+/* Window Lampe Magique */
 .window {
     position: absolute;
     width: 580px;
     background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px);
     border-radius: 28px;
     border: 1px solid rgba(255, 255, 255, 0.25);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     overflow: hidden;
-    will-change: transform, clip-path, opacity;
     z-index: 10;
 }
 
@@ -201,11 +146,9 @@ body.light-theme .combo-container {
     gap: 12px;
     cursor: grab;
     border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-    user-select: none;
 }
 
 .title-bar:active { cursor: grabbing; }
-.title-bar:hover { background: rgba(255, 255, 255, 0.1); }
 
 .window-buttons { display: flex; gap: 10px; }
 .window-btn {
@@ -225,11 +168,10 @@ body.light-theme .combo-container {
     color: rgba(255, 255, 255, 0.95);
     font-size: 14px;
     font-weight: 600;
-    margin-left: 8px;
 }
 
 .content {
-    padding: 32px 32px 40px;
+    padding: 32px;
     color: rgba(255, 255, 255, 0.9);
 }
 .content h2 {
@@ -255,7 +197,7 @@ body.light-theme .combo-container {
     top: 8px;
 }
 
-/* Control Button - Version elegante */
+/* Control Button */
 .control-btn {
     position: fixed;
     bottom: 40px;
@@ -271,7 +213,6 @@ body.light-theme .combo-container {
     cursor: grab;
     z-index: 100;
     font-family: monospace;
-    user-select: none;
     transition: all 0.3s;
 }
 .control-btn:hover {
@@ -280,8 +221,6 @@ body.light-theme .combo-container {
 }
 .control-btn.dragging {
     cursor: grabbing;
-    transform: scale(1.02);
-    transition: none;
 }
 .control-btn.restore-mode {
     background: rgba(102, 126, 234, 0.25);
@@ -313,7 +252,6 @@ body.light-theme .combo-container {
     color: rgba(255, 255, 255, 0.7);
     font-size: 10px;
     text-transform: uppercase;
-    letter-spacing: 2px;
 }
 .potentiometer {
     width: 130px;
@@ -327,7 +265,6 @@ body.light-theme .combo-container {
     height: 18px;
     border-radius: 50%;
     background: linear-gradient(135deg, #ffbd2e, #ff9d00);
-    border: 2px solid rgba(255, 255, 255, 0.4);
     cursor: grab;
 }
 .potentiometer-value {
@@ -339,26 +276,13 @@ body.light-theme .combo-container {
     border-radius: 20px;
 }
 
-/* ============================================================
-   STYLES WOBBLY WINDOWS
-   ============================================================ */
-
-.windows-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-    padding: 20px;
-}
-
+/* Wobbly Window */
 .wobbly-window {
     position: absolute;
     width: 460px;
     min-height: 380px;
     border-radius: 24px;
     cursor: default;
-    transition: z-index 0s;
-    will-change: transform, left, top;
 }
 
 .window-surface {
@@ -367,10 +291,9 @@ body.light-theme .combo-container {
     height: 100%;
     border-radius: 24px;
     overflow: hidden;
-    transition: box-shadow 0.2s;
     background: rgba(18, 22, 35, 0.92);
     backdrop-filter: blur(12px);
-    box-shadow: 0 30px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    box-shadow: 0 30px 50px rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
@@ -380,20 +303,13 @@ body.light-theme .combo-container {
     align-items: center;
     justify-content: space-between;
     cursor: grab;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    transition: background 0.2s;
     background: rgba(30, 35, 55, 0.6);
-    border-bottom-color: rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
-
-.window-titlebar:active { cursor: grabbing; }
 
 .window-title {
     font-weight: 600;
     font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
     color: #f0f3fa;
 }
 
@@ -409,32 +325,13 @@ body.light-theme .combo-container {
     border-radius: 50%;
     border: none;
     cursor: pointer;
-    transition: transform 0.15s;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
 }
-.window-btn:hover { transform: scale(1.2); }
 .btn-close { background: #ff5f56; }
 .btn-minimize { background: #ffbd2e; }
-.btn-maximize { 
-    background: #27c93f;
-    position: relative;
-}
-.btn-maximize::after {
-    content: "□";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 8px;
-    color: white;
-    font-weight: bold;
-}
+.btn-maximize { background: #27c93f; }
 
 .window-content {
     padding: 24px;
-    flex: 1;
     color: #cbd5e6;
 }
 .window-content h2 {
@@ -442,12 +339,6 @@ body.light-theme .combo-container {
     font-size: 20px;
     color: white;
 }
-.window-content p {
-    margin-bottom: 12px;
-    font-size: 14px;
-    line-height: 1.5;
-}
-
 .wobble-demo {
     background: linear-gradient(135deg, #3b82f6, #a855f7);
     padding: 16px;
@@ -456,10 +347,9 @@ body.light-theme .combo-container {
     font-weight: bold;
     margin: 16px 0;
     color: white;
-    transition: transform 0.1s;
 }
 
-/* Control Panel Wobbly */
+/* Control Panel */
 .control-panel {
     position: fixed;
     bottom: 20px;
@@ -471,7 +361,6 @@ body.light-theme .combo-container {
     width: 290px;
     z-index: 2000;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 .control-panel h3 {
     color: white;
@@ -495,10 +384,8 @@ body.light-theme .combo-container {
     background: #334155;
     height: 4px;
     border-radius: 4px;
-    -webkit-appearance: none;
 }
 .control-group input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
     width: 16px;
     height: 16px;
     border-radius: 50%;
@@ -516,7 +403,6 @@ body.light-theme .combo-container {
     color: white;
     padding: 8px 12px;
     border-radius: 16px;
-    font-size: 12px;
     cursor: pointer;
     margin-top: 8px;
 }
@@ -530,27 +416,9 @@ body.light-theme .combo-container {
     font-weight: bold;
     cursor: pointer;
     margin-top: 12px;
-    transition: all 0.2s;
-}
-.reset-btn:hover {
-    background: #2563eb;
-    transform: scale(0.98);
 }
 
-/* États */
-.wobbly-window.focused,
-.combo-window.focused {
-    z-index: 100;
-}
-.dragging-active {
-    cursor: grabbing !important;
-    z-index: 200 !important;
-}
-
-/* ============================================================
-   STYLES COMBO WINDOW
-   ============================================================ */
-
+/* Combo Window */
 .combo-window {
     position: absolute;
     left: 50%;
@@ -558,12 +426,11 @@ body.light-theme .combo-container {
     transform: translate(-50%, -50%);
     width: 560px;
     background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px);
     border-radius: 28px;
     border: 1px solid rgba(255, 255, 255, 0.25);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     overflow: hidden;
-    will-change: transform, clip-path, opacity, left, top;
     z-index: 10;
 }
 
@@ -575,6 +442,13 @@ body.light-theme .combo-container {
 
 .combo-window .title-bar {
     cursor: grab;
+}
+
+/* Wobbly content interne pour Combo */
+.wobbly-content {
+    width: 100%;
+    height: 100%;
+    will-change: transform;
 }
 
 .double-panel {
@@ -615,7 +489,6 @@ body.light-theme .combo-container {
     background: rgba(255, 255, 255, 0.2);
     height: 4px;
     border-radius: 4px;
-    -webkit-appearance: none;
 }
 
 .double-panel input::-webkit-slider-thumb {
@@ -624,10 +497,9 @@ body.light-theme .combo-container {
     border-radius: 50%;
     background: #ffbd2e;
     cursor: pointer;
-    -webkit-appearance: none;
 }
 
-.double-panel .wobbly-toggle {
+.wobbly-toggle-switch {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -636,19 +508,19 @@ body.light-theme .combo-container {
     border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.double-panel .wobbly-toggle label {
+.wobbly-toggle-switch label {
     cursor: pointer;
     color: #ffbd2e;
+    font-size: 12px;
 }
 
-.double-panel .wobbly-toggle input {
+.wobbly-toggle-switch input {
     width: auto;
-    margin: 0;
     transform: scale(1.2);
     cursor: pointer;
 }
 
-/* Bouton theme global - elegant */
+/* Theme Button */
 .global-theme-btn {
     position: fixed;
     top: 20px;
@@ -664,34 +536,90 @@ body.light-theme .combo-container {
     font-weight: 600;
     font-size: 13px;
     transition: all 0.3s ease;
-    letter-spacing: 1px;
 }
 
 .global-theme-btn:hover {
     background: rgba(255, 189, 46, 0.3);
     transform: translateY(-2px);
-    border-color: rgba(255, 189, 46, 0.5);
 }
 
-body.light-theme .global-theme-btn {
-    background: rgba(255, 255, 255, 0.2);
+/* Navigation */
+.nav-bar {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(16px);
+    border-radius: 60px;
+    padding: 8px 20px;
+    display: flex;
+    gap: 16px;
+    z-index: 1000;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.nav-btn {
+    padding: 10px 24px;
+    border-radius: 40px;
+    border: none;
+    background: transparent;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.nav-btn.active {
+    background: linear-gradient(135deg, #ffbd2e, #a78bfa);
     color: #1a1a2e;
-    border-color: rgba(0, 0, 0, 0.1);
 }
 
-body.light-theme .global-theme-btn:hover {
-    background: rgba(0, 0, 0, 0.1);
+/* Demo sections */
+.demo-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+}
+
+.demo-section {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+    overflow: hidden;
+}
+
+.demo-section.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.section-header {
+    text-align: center;
+    padding: 20px;
+    color: white;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    pointer-events: none;
+}
+
+.section-header h1 {
+    font-size: 2rem;
+    margin-bottom: 8px;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-    .window { width: 90%; }
-    .combo-window { width: 90%; }
+    .window, .combo-window { width: 90%; }
     .wobbly-window { width: 90%; left: 5% !important; }
-    .potentiometer-panel { flex-direction: column; gap: 16px; bottom: auto; top: 20px; left: 20px; }
-    .potentiometer { width: 100%; }
-    .control-btn { padding: 10px 20px; font-size: 12px; }
-    .control-panel { width: 260px; padding: 16px; bottom: auto; top: 80px; }
-    .double-panel { width: 280px; bottom: auto; top: 80px; }
-    .global-theme-btn { top: 20px; right: 20px; }
+    .potentiometer-panel { flex-direction: column; gap: 16px; }
+    .control-panel { width: 260px; }
+    .double-panel { width: 280px; }
 }
