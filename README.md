@@ -25,7 +25,7 @@
 
 ## Presentation
 
-UI-Library est une bibliotheque JavaScript modulaire qui reproduit deux effets de fenetres emblematiques des bureaux graphiques modernes : l'effet Genie de macOS et l'effet Wobbly Windows de Compiz. Ces effets sont implementes en pur JavaScript, sans dependance externe, et peuvent etre integres dans n'importe quel projet Web.
+UI-Library est une bibliotheque JavaScript modulaire qui reproduit deux effets de fenetres emblematiques des bureaux graphiques modernes : l'effet Genie lampe magique et l'effet Wobbly Windows de Compiz. Ces effets sont implementes en pur JavaScript, sans dependance externe, et peuvent etre integres dans n'importe quel projet Web.
 
 Le projet se compose de trois modules independants qui peuvent etre utilises seuls ou combines :
 
